@@ -30,16 +30,16 @@ import com.example.breedify.data.repository.DogRepository
 import com.example.breedify.navigation.BreedifyBottomNavigation
 import kotlinx.coroutines.launch
 
-// Color scheme for Breedify
+// Color scheme for Breedify - Inspired by the uploaded design
 object BreedifyColors {
-    val Background = Color(0xFFD2E6DB) // Same as welcome screen background
-    val Primary = Color(0xFF4A90E2) // Soft blue
-    val Secondary = Color(0xFFFFB347) // Light orange accent
+    val Background = Color(0xFFD4E6D4) // Soft mint green background like the design
+    val Primary = Color(0xFF4A90E2) // Soft blue for accents
+    val Secondary = Color(0xFF5CB85C) // Green accent color from the design
     val CardBackground = Color(0xFFFFFFFF) // Pure white for cards
     val TextPrimary = Color(0xFF2D3748) // Dark gray for main text
-    val TextSecondary = Color(0xFF718096) // Medium gray for secondary text
-    val SearchBackground = Color(0xFFF7FAFC) // Light gray for search bar
-    val ChatbotPrimary = Color(0xFF48BB78) // Green for chatbot
+    val TextSecondary = Color(0xFF6B7280) // Medium gray for secondary text
+    val SearchBackground = Color(0xFFF8F9FA) // Very light background for search
+    val ChatbotPrimary = Color(0xFF5CB85C) // Green for chatbot matching the theme
 }
 
 // Remove old DogBreed data class - now using Breed from API
@@ -94,12 +94,12 @@ fun HomeScreen(
                     .padding(horizontal = 20.dp)
                     .padding(paddingValues)
             ) {
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(60.dp))
             
-            // Header with title and paw icon
+            // Header with title and subtitle inspired by the design
             HeaderSection()
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
             
             // Search bar
             SearchBar(
@@ -143,23 +143,68 @@ fun HomeScreen(
 
 @Composable
 private fun HeaderSection() {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start,
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 4.dp)
     ) {
+        // Top row with app icon and profile (inspired by the design)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // App grid icon (inspired by the design)
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        Color.White.copy(alpha = 0.3f),
+                        RoundedCornerShape(12.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "⚏",
+                    fontSize = 20.sp,
+                    color = BreedifyColors.TextPrimary
+                )
+            }
+            
+            // Profile icon (inspired by the design)
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        BreedifyColors.Secondary,
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "✓",
+                    fontSize = 20.sp,
+                    color = Color.White
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // Main title and subtitle (inspired by the design)
         Text(
             text = "Breedify",
-            fontSize = 36.sp,
+            fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             color = BreedifyColors.TextPrimary,
         )
-        Spacer(modifier = Modifier.width(8.dp))
+        
         Text(
-            text = "🐾",
-            fontSize = 32.sp
+            text = "Your favorite dog breeds",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
+            color = BreedifyColors.TextSecondary,
+            modifier = Modifier.padding(top = 4.dp)
         )
     }
 }
@@ -174,7 +219,7 @@ private fun SearchBar(
         onValueChange = onSearchTextChange,
         placeholder = {
             Text(
-                text = "Enter breed name...",
+                text = "Search",
                 color = BreedifyColors.TextSecondary
             )
         },
@@ -188,11 +233,11 @@ private fun SearchBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(25.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = BreedifyColors.SearchBackground,
-            unfocusedContainerColor = BreedifyColors.SearchBackground,
-            focusedBorderColor = BreedifyColors.Primary,
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            focusedBorderColor = Color.Transparent,
             unfocusedBorderColor = Color.Transparent
         ),
         singleLine = true
@@ -207,9 +252,9 @@ private fun TrendingBreedsSection(
 ) {
     Column {
         Text(
-            text = "Trending Breeds",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
+            text = "Recommended",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
             color = BreedifyColors.TextPrimary,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -292,30 +337,92 @@ private fun IdentifyBreedSection(
 ) {
     Column {
         Text(
-            text = "Identify a Breed",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
+            text = "New Breeds",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
             color = BreedifyColors.TextPrimary,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        
+        Text(
+            text = "Find your best friend and learn about them",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Normal,
+            color = BreedifyColors.TextSecondary,
             modifier = Modifier.padding(bottom = 16.dp)
         )
         
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        // Single card layout inspired by the design
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .clickable { onUploadPhoto() },
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            IdentifyButtonWithEmoji(
-                text = "Upload a Photo",
-                emoji = "🖼️",
-                onClick = onUploadPhoto,
-                modifier = Modifier.weight(1f)
-            )
-            
-            IdentifyButtonWithEmoji(
-                text = "Open Camera",
-                emoji = "📷",
-                onClick = onOpenCamera,
-                modifier = Modifier.weight(1f)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = "Identify Breed",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = BreedifyColors.TextPrimary
+                    )
+                    Text(
+                        text = "Upload or take a photo",
+                        fontSize = 14.sp,
+                        color = BreedifyColors.TextSecondary,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Phone icon
+                        Icon(
+                            imageVector = Icons.Default.Search, // Using search as placeholder
+                            contentDescription = "Phone",
+                            tint = BreedifyColors.TextSecondary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        // Email icon  
+                        Icon(
+                            imageVector = Icons.Default.Search, // Using search as placeholder
+                            contentDescription = "Email",
+                            tint = BreedifyColors.TextSecondary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+                
+                // Dog illustration placeholder
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .background(
+                            BreedifyColors.Secondary.copy(alpha = 0.1f),
+                            RoundedCornerShape(12.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "🐕",
+                        fontSize = 32.sp
+                    )
+                }
+            }
         }
     }
 }
