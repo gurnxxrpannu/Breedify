@@ -39,8 +39,8 @@ fun DogBreedCard(
 ) {
     // Calculate dimensions based on focus state
     val cardWidth = if (isFocused) 165.dp else 130.dp
-    val cardHeight = if (isFocused) 240.dp else 200.dp // Increased height to accommodate bigger image
-    val imageHeight = if (isFocused) 185.dp else 150.dp // Increased image height
+    val cardHeight = if (isFocused) 260.dp else 220.dp // Further increased height for bigger image
+    val imageHeight = if (isFocused) 200.dp else 165.dp // Further increased image height
 
     // 1. TAP ANIMATION using interaction source
     val interactionSource = remember { MutableInteractionSource() }
@@ -203,8 +203,8 @@ fun SkeletonDogBreedCard(
 ) {
     // Calculate dimensions based on focus state
     val cardWidth = if (isFocused) 165.dp else 130.dp
-    val cardHeight = if (isFocused) 240.dp else 200.dp // Increased height to match main card
-    val imageHeight = if (isFocused) 185.dp else 150.dp // Increased image height to match main card
+    val cardHeight = if (isFocused) 260.dp else 220.dp // Further increased height to match main card
+    val imageHeight = if (isFocused) 200.dp else 165.dp // Further increased image height to match main card
 
     val infiniteTransition = rememberInfiniteTransition(label = "skeleton_transition")
 
