@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.breedify.screens.welcomeScreen.WelcomeScreen
 import com.example.breedify.screens.homeScreen.HomeScreen
+import com.example.breedify.screens.exploreScreen.ExploreScreen
 import com.example.breedify.ui.theme.BreedifyTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,13 +26,30 @@ class MainActivity : ComponentActivity() {
         setContent {
             BreedifyTheme {
                 var showWelcomeScreen by remember { mutableStateOf(true) }
+                var currentScreen by remember { mutableStateOf("home") }
                 
                 if (showWelcomeScreen) {
                     WelcomeScreen(
                         onGetStarted = { showWelcomeScreen = false }
                     )
                 } else {
-                    HomeScreen()
+                    when (currentScreen) {
+                        "home" -> HomeScreen(
+                            onNavigate = { route -> currentScreen = route }
+                        )
+                        "explore" -> ExploreScreen(
+                            onNavigate = { route -> currentScreen = route }
+                        )
+                     //   "camera" -> CameraScreen(
+                     //       onNavigate = { route -> currentScreen = route }
+                      //  )
+                      //  "profile" -> ProfileScreen(
+                      //      onNavigate = { route -> currentScreen = route }
+                       // )
+                        else -> HomeScreen(
+                            onNavigate = { route -> currentScreen = route }
+                        )
+                    }
                 }
             }
         }
