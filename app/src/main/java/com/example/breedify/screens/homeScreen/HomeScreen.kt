@@ -80,7 +80,8 @@ fun HomeScreen(
         bottomBar = {
             BreedifyBottomNavigation(
                 currentRoute = "home",
-                onNavigate = onNavigate
+                onNavigate = onNavigate,
+                onChatbotClick = { showChatbot = true }
             )
         },
         containerColor = BreedifyColors.Background
@@ -127,11 +128,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(32.dp)) // Space for bottom navigation
             }
             
-            // Floating chatbot button
-            FloatingChatbotButton(
-                modifier = Modifier.align(Alignment.BottomEnd),
-                onClick = { showChatbot = true }
-            )
+
             
             // Chatbot dialog
             if (showChatbot) {
@@ -194,7 +191,7 @@ private fun HeaderSection() {
         // Main title and subtitle (inspired by the design)
         Text(
             text = "Breedify",
-            fontSize = 32.sp,
+            fontSize = 40.sp,
             fontWeight = FontWeight.Bold,
             color = BreedifyColors.TextPrimary,
         )
@@ -345,7 +342,7 @@ private fun IdentifyBreedSection(
         )
         
         Text(
-            text = "Find your best friend and learn about them",
+            text = "Identify Breed of any dog just with a click",
             fontSize = 14.sp,
             fontWeight = FontWeight.Normal,
             color = BreedifyColors.TextSecondary,
