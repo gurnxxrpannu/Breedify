@@ -180,7 +180,8 @@ fun ExploreScreen(
         ) {
             BreedifyBottomNavigation(
                 currentRoute = "explore",
-                onNavigate = onNavigate
+                onNavigate = onNavigate,
+                onChatbotClick = { /* Handle chatbot click if needed */ }
             )
         }
     }
