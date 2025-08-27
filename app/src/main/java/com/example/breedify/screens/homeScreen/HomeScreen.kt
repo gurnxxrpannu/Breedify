@@ -25,6 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.breedify.R
+import com.example.breedify.data.api.Breed
+import com.example.breedify.data.repository.DogRepository
+import com.example.breedify.navigation.BreedifyBottomNavigation
+import kotlinx.coroutines.launch
 
 // Color scheme for Breedify
 object BreedifyColors {
@@ -38,30 +42,59 @@ object BreedifyColors {
     val ChatbotPrimary = Color(0xFF48BB78) // Green for chatbot
 }
 
-data class DogBreed(
-    val name: String,
-    val imageRes: Int,
-    val description: String
-)
+// Remove old DogBreed data class - now using Breed from API
 
 @Composable
 fun HomeScreen(
     onUploadPhoto: () -> Unit = {},
     onOpenCamera: () -> Unit = {},
-    onBreedClick: (DogBreed) -> Unit = {}
+    onBreedClick: (Breed) -> Unit = {},
+    onNavigate: (String) -> Unit = {}
 ) {
     var showChatbot by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
+    var trendingBreeds by remember { mutableStateOf<List<Breed>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(false) }
     
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(BreedifyColors.Background)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
-        ) {
-            Spacer(modifier = Modifier.height(60.dp))
+    val repository = remember { DogRepository() }
+    val scope = rememberCoroutineScope()
+    
+    // Load trending breeds on screen load
+    LaunchedEffect(Unit) {
+        isLoading = true
+        scope.launch {
+            repository.getAllBreeds().fold(
+                onSuccess = { breeds ->
+                    // Take first 10 breeds as "trending"
+                    trendingBreeds = breeds.take(10)
+                },
+                onFailure = { 
+                    // Handle error - could show fallback data
+                }
+            )
+            isLoading = false
+        }
+    }
+    
+    Scaffold(
+        bottomBar = {
+            BreedifyBottomNavigation(
+                currentRoute = "home",
+                onNavigate = onNavigate
+            )
+        },
+        containerColor = BreedifyColors.Background
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(BreedifyColors.Background)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+                    .padding(paddingValues)
+            ) {
+            Spacer(modifier = Modifier.height(100.dp))
             
             // Header with title and paw icon
             HeaderSection()
@@ -77,7 +110,11 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(32.dp))
             
             // Trending Breeds section
-            TrendingBreedsSection(onBreedClick = onBreedClick)
+            TrendingBreedsSection(
+                breeds = trendingBreeds,
+                isLoading = isLoading,
+                onBreedClick = onBreedClick
+            )
             
             Spacer(modifier = Modifier.height(32.dp))
             
@@ -87,18 +124,19 @@ fun HomeScreen(
                 onOpenCamera = onOpenCamera
             )
             
-            Spacer(modifier = Modifier.height(100.dp)) // Space for floating button
-        }
-        
-        // Floating chatbot button
-        FloatingChatbotButton(
-            modifier = Modifier.align(Alignment.BottomEnd),
-            onClick = { showChatbot = true }
-        )
-        
-        // Chatbot dialog
-        if (showChatbot) {
-            ChatbotDialog(onDismiss = { showChatbot = false })
+                Spacer(modifier = Modifier.height(32.dp)) // Space for bottom navigation
+            }
+            
+            // Floating chatbot button
+            FloatingChatbotButton(
+                modifier = Modifier.align(Alignment.BottomEnd),
+                onClick = { showChatbot = true }
+            )
+            
+            // Chatbot dialog
+            if (showChatbot) {
+                ChatbotDialog(onDismiss = { showChatbot = false })
+            }
         }
     }
 }
@@ -107,19 +145,21 @@ fun HomeScreen(
 private fun HeaderSection() {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth()
+        horizontalArrangement = Arrangement.Start,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 4.dp)
     ) {
         Text(
             text = "Breedify",
-            fontSize = 32.sp,
+            fontSize = 36.sp,
             fontWeight = FontWeight.Bold,
             color = BreedifyColors.TextPrimary,
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "🐾",
-            fontSize = 28.sp
+            fontSize = 32.sp
         )
     }
 }
@@ -160,7 +200,11 @@ private fun SearchBar(
 }
 
 @Composable
-private fun TrendingBreedsSection(onBreedClick: (DogBreed) -> Unit) {
+private fun TrendingBreedsSection(
+    breeds: List<Breed>,
+    isLoading: Boolean,
+    onBreedClick: (Breed) -> Unit
+) {
     Column {
         Text(
             text = "Trending Breeds",
@@ -174,11 +218,18 @@ private fun TrendingBreedsSection(onBreedClick: (DogBreed) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(horizontal = 4.dp)
         ) {
-            items(getSampleBreeds()) { breed ->
-                BreedCard(
-                    breed = breed,
-                    onClick = { onBreedClick(breed) }
-                )
+            if (isLoading) {
+                items(5) { // Show 5 skeleton cards while loading
+                    com.example.breedify.components.SkeletonDogBreedCard(isFocused = true)
+                }
+            } else {
+                items(breeds) { breed ->
+                    com.example.breedify.components.DogBreedCard(
+                        breed = breed,
+                        onClick = { onBreedClick(breed) },
+                        isFocused = true
+                    )
+                }
             }
         }
     }
@@ -186,7 +237,7 @@ private fun TrendingBreedsSection(onBreedClick: (DogBreed) -> Unit) {
 
 @Composable
 private fun BreedCard(
-    breed: DogBreed,
+    breed: Breed,
     onClick: () -> Unit
 ) {
     Card(
@@ -399,22 +450,14 @@ private fun ChatbotDialog(onDismiss: () -> Unit) {
     }
 }
 
-// Sample data for trending breeds
-private fun getSampleBreeds(): List<DogBreed> {
+// Sample data for trending breeds - now using Breed from API
+private fun getSampleBreeds(): List<Breed> {
     return listOf(
-        DogBreed("Golden Retriever", R.drawable.welcomescreen_dogsticker, "Friendly and intelligent"),
-        DogBreed("Labrador", R.drawable.welcomescreen_dogsticker, "Loyal and outgoing"),
-        DogBreed("German Shepherd", R.drawable.welcomescreen_dogsticker, "Confident and versatile"),
-        DogBreed("Bulldog", R.drawable.welcomescreen_dogsticker, "Calm and friendly"),
-        DogBreed("Poodle", R.drawable.welcomescreen_dogsticker, "Intelligent and active"),
-        DogBreed("Beagle", R.drawable.welcomescreen_dogsticker, "Curious and friendly")
+        Breed(id = 1, name = "Golden Retriever"),
+        Breed(id = 2, name = "Labrador"),
+        Breed(id = 3, name = "German Shepherd"),
+        Breed(id = 4, name = "Bulldog"),
+        Breed(id = 5, name = "Poodle"),
+        Breed(id = 6, name = "Beagle")
     )
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun HomeScreenPreview() {
-    MaterialTheme {
-        HomeScreen()
-    }
 }
