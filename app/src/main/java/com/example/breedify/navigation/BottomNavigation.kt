@@ -1,13 +1,26 @@
 package com.example.breedify.navigation
 
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.sqrt
 
 sealed class BottomNavItem(
     val route: String,
@@ -20,10 +33,79 @@ sealed class BottomNavItem(
     object Profile : BottomNavItem("profile", "Profile", "👤")
 }
 
+// Colors for the new bottom navigation design
+object BottomNavColors {
+    val Background = Color.White
+    val Selected = Color(0xFFFF6B35) // Orange color from the design
+    val Unselected = Color(0xFF9CA3AF) // Light gray
+    val PawButton = Color(0xFFFF6B35) // Orange for the paw button
+    val Shadow = Color.Black.copy(alpha = 0.1f)
+}
+
+// Custom shape for bottom navigation with proper semicircular cutout
+class BottomNavCutoutShape : Shape {
+    override fun createOutline(
+        size: androidx.compose.ui.geometry.Size,
+        layoutDirection: androidx.compose.ui.unit.LayoutDirection,
+        density: androidx.compose.ui.unit.Density
+    ): Outline {
+        val path = Path().apply {
+            val width = size.width
+            val height = size.height
+            val cutoutRadius = with(density) { 40.dp.toPx() }
+            val cutoutCenter = width / 2f
+            val cornerRadius = with(density) { 25.dp.toPx() }
+            
+            // Start from top-left with rounded corner
+            moveTo(cornerRadius, 0f)
+            
+            // Top edge to cutout start
+            lineTo(cutoutCenter - cutoutRadius, 0f)
+            
+            // Create semicircular cutout going downward into the bar
+            // Left side of semicircle
+            quadraticBezierTo(
+                cutoutCenter - cutoutRadius, cutoutRadius * 0.6f,
+                cutoutCenter - cutoutRadius * 0.7f, cutoutRadius * 0.8f
+            )
+            
+            // Bottom of semicircle
+            quadraticBezierTo(
+                cutoutCenter, cutoutRadius,
+                cutoutCenter + cutoutRadius * 0.7f, cutoutRadius * 0.8f
+            )
+            
+            // Right side of semicircle
+            quadraticBezierTo(
+                cutoutCenter + cutoutRadius, cutoutRadius * 0.6f,
+                cutoutCenter + cutoutRadius, 0f
+            )
+            
+            // Continue top edge to top-right corner
+            lineTo(width - cornerRadius, 0f)
+            quadraticBezierTo(width, 0f, width, cornerRadius)
+            
+            // Right edge
+            lineTo(width, height)
+            
+            // Bottom edge
+            lineTo(0f, height)
+            
+            // Left edge
+            lineTo(0f, cornerRadius)
+            quadraticBezierTo(0f, 0f, cornerRadius, 0f)
+            
+            close()
+        }
+        return Outline.Generic(path)
+    }
+}
+
 @Composable
 fun BreedifyBottomNavigation(
     currentRoute: String,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    onChatbotClick: () -> Unit = {}
 ) {
     val items = listOf(
         BottomNavItem.Home,
@@ -32,35 +114,95 @@ fun BreedifyBottomNavigation(
         BottomNavItem.Profile
     )
     
-    NavigationBar(
-        containerColor = Color.White,
-        contentColor = Color(0xFF4A90E2)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp)
     ) {
-        items.forEach { item ->
-            NavigationBarItem(
-                icon = {
-                    Text(
-                        text = item.emoji,
-                        fontSize = 24.sp
+        // Main bottom navigation bar with cutout
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(70.dp)
+                .align(Alignment.BottomCenter)
+                .shadow(8.dp, BottomNavCutoutShape())
+                .background(BottomNavColors.Background, BottomNavCutoutShape())
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Left items (Home, Explore)
+                items.take(2).forEach { item ->
+                    BottomNavItemView(
+                        item = item,
+                        isSelected = currentRoute == item.route,
+                        onClick = { onNavigate(item.route) }
                     )
-                },
-                label = {
-                    Text(
-                        text = item.title,
-                        fontSize = 12.sp,
-                        fontWeight = if (currentRoute == item.route) FontWeight.Bold else FontWeight.Normal
+                }
+                
+                // Space for center paw button (cutout area)
+                Spacer(modifier = Modifier.width(80.dp))
+                
+                // Right items (Camera, Profile)
+                items.drop(2).forEach { item ->
+                    BottomNavItemView(
+                        item = item,
+                        isSelected = currentRoute == item.route,
+                        onClick = { onNavigate(item.route) }
                     )
-                },
-                selected = currentRoute == item.route,
-                onClick = { onNavigate(item.route) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color(0xFF4A90E2),
-                    selectedTextColor = Color(0xFF4A90E2),
-                    unselectedIconColor = Color(0xFF718096),
-                    unselectedTextColor = Color(0xFF718096),
-                    indicatorColor = Color(0xFFE3F2FD)
-                )
+                }
+            }
+        }
+        
+        // Center floating paw button (sits in the cutout)
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .align(Alignment.TopCenter)
+                .offset(y = (-15).dp)
+                .shadow(8.dp, CircleShape)
+                .background(BottomNavColors.PawButton, CircleShape)
+                .clickable { onChatbotClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "🐾",
+                fontSize = 28.sp,
+                color = Color.White
             )
         }
+    }
+}
+
+@Composable
+private fun BottomNavItemView(
+    item: BottomNavItem,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clickable { onClick() }
+            .padding(8.dp)
+    ) {
+        Text(
+            text = item.emoji,
+            fontSize = if (isSelected) 26.sp else 22.sp,
+            color = if (isSelected) BottomNavColors.Selected else BottomNavColors.Unselected
+        )
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        Text(
+            text = item.title,
+            fontSize = 11.sp,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+            color = if (isSelected) BottomNavColors.Selected else BottomNavColors.Unselected
+        )
     }
 }
