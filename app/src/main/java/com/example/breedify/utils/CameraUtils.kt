@@ -60,8 +60,8 @@ class CameraUtils {
                 val bitmap = BitmapFactory.decodeStream(inputStream)
                 inputStream?.close()
                 
-                // Resize image for ML processing (typically 224x224 or 299x299)
-                resizeBitmap(bitmap, 224, 224)
+                // Resize image for ML processing to 299x299 for TensorFlow Lite model
+                resizeBitmap(bitmap, 299, 299)
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
@@ -85,6 +85,29 @@ class CameraUtils {
                 outputStream.flush()
                 outputStream.close()
                 Uri.fromFile(file)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+        
+        fun copyFileToBreedifyDirectory(sourceUri: Uri, context: Context): Uri? {
+            return try {
+                val inputStream = context.contentResolver.openInputStream(sourceUri)
+                if (inputStream != null) {
+                    val destinationFile = createImageFile(context)
+                    val outputStream = FileOutputStream(destinationFile)
+                    
+                    inputStream.copyTo(outputStream)
+                    
+                    inputStream.close()
+                    outputStream.flush()
+                    outputStream.close()
+                    
+                    Uri.fromFile(destinationFile)
+                } else {
+                    null
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 null

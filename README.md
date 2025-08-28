@@ -250,10 +250,6 @@ We welcome contributions! Please follow these steps:
 - Test on multiple screen sizes
 - Ensure smooth animations
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 🙏 Acknowledgments
 
 - **Dog API**: Thanks to the comprehensive dog breeds API for rich breed data
@@ -263,14 +259,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Jetpack Compose**: Modern Android UI toolkit
 - **Open Source Community**: For amazing libraries and tools
 - **Dog Breed Dataset**: Contributors who provided labeled training data
-
-## 📞 Contact
-
-- **Developer**: [Your Name]
-- **Email**: [your.email@example.com]
-- **GitHub**: [@yourusername](https://github.com/yourusername)
-- **LinkedIn**: [Your LinkedIn Profile]
-
 ---
 
 **Made with ❤️ and 🐾 for dog lovers everywhere**

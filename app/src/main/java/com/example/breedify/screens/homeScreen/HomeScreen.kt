@@ -52,6 +52,7 @@ fun HomeScreen(
     onNavigate: (String) -> Unit = {}
 ) {
     var showChatbot by remember { mutableStateOf(false) }
+    var showImageSourceDialog by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
     var trendingBreeds by remember { mutableStateOf<List<Breed>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
@@ -121,8 +122,7 @@ fun HomeScreen(
             
             // Identify a Breed section
             IdentifyBreedSection(
-                onUploadPhoto = onUploadPhoto,
-                onOpenCamera = onOpenCamera
+                onShowDialog = { showImageSourceDialog = true }
             )
             
                 Spacer(modifier = Modifier.height(32.dp)) // Space for bottom navigation
@@ -133,6 +133,21 @@ fun HomeScreen(
             // Chatbot dialog
             if (showChatbot) {
                 ChatbotDialog(onDismiss = { showChatbot = false })
+            }
+            
+            // Image source selection dialog
+            if (showImageSourceDialog) {
+                ImageSourceDialog(
+                    onDismiss = { showImageSourceDialog = false },
+                    onCameraSelected = {
+                        showImageSourceDialog = false
+                        onOpenCamera()
+                    },
+                    onGallerySelected = {
+                        showImageSourceDialog = false
+                        onUploadPhoto()
+                    }
+                )
             }
         }
     }
@@ -329,8 +344,7 @@ private fun BreedCard(
 
 @Composable
 private fun IdentifyBreedSection(
-    onUploadPhoto: () -> Unit,
-    onOpenCamera: () -> Unit
+    onShowDialog: () -> Unit
 ) {
     Column {
         Text(
@@ -354,7 +368,7 @@ private fun IdentifyBreedSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
-                .clickable { onUploadPhoto() },
+                .clickable { onShowDialog() },
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.White
@@ -549,6 +563,156 @@ private fun ChatbotDialog(onDismiss: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ImageSourceDialog(
+    onDismiss: () -> Unit,
+    onCameraSelected: () -> Unit,
+    onGallerySelected: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = BreedifyColors.CardBackground
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            ) {
+                Text(
+                    text = "Select Image Source",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = BreedifyColors.TextPrimary,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                // Camera option
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .clickable { onCameraSelected() },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = BreedifyColors.Primary.copy(alpha = 0.1f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(
+                                    BreedifyColors.Primary,
+                                    CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "📷",
+                                fontSize = 24.sp
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Column {
+                            Text(
+                                text = "Camera",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = BreedifyColors.TextPrimary
+                            )
+                            Text(
+                                text = "Take a new photo",
+                                fontSize = 14.sp,
+                                color = BreedifyColors.TextSecondary
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Gallery option
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .clickable { onGallerySelected() },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = BreedifyColors.Secondary.copy(alpha = 0.1f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(
+                                    BreedifyColors.Secondary,
+                                    CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "📁",
+                                fontSize = 24.sp
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Column {
+                            Text(
+                                text = "Gallery",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = BreedifyColors.TextPrimary
+                            )
+                            Text(
+                                text = "Choose from files",
+                                fontSize = 14.sp,
+                                color = BreedifyColors.TextSecondary
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Cancel button
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(
+                        text = "Cancel",
+                        color = BreedifyColors.TextSecondary
+                    )
+                }
             }
         }
     }
