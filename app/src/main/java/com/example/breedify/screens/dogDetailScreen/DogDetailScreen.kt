@@ -194,9 +194,8 @@ private fun HeroImageSection(
                             .build(),
                         contentDescription = breed.name,
                         modifier = Modifier
-                            .size(280.dp)
-                            .align(Alignment.Center)
-                            .clip(RoundedCornerShape(20.dp)),
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(25.dp)), // Match the card's corner radius
                         contentScale = ContentScale.Crop
                     )
                 } else {
