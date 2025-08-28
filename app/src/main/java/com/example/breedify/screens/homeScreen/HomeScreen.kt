@@ -240,8 +240,8 @@ private fun HeaderSection() {
         }
         
         Text(
-            text = "Your favorite dog breeds",
-            fontSize = 16.sp,
+            text = "Snap. Detect. Connect — Know your dog in a click",
+            fontSize = 14.sp,
             fontWeight = FontWeight.Normal,
             color = BreedifyColors.TextSecondary,
             modifier = Modifier.padding(top = 4.dp)
