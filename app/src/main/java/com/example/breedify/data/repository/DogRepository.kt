@@ -1,8 +1,6 @@
 package com.example.breedify.data.repository
 
-import com.example.breedify.data.api.Breed
-import com.example.breedify.data.api.BreedFact
-import com.example.breedify.data.api.DogApiService
+import com.example.breedify.data.api.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -67,6 +65,88 @@ class DogRepository {
                 Result.success(response.body() ?: emptyList())
             } else {
                 Result.failure(Exception("Failed to fetch breed facts: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    // Favourites methods
+    suspend fun getFavourites(subId: String? = null): Result<List<Favourite>> {
+        return try {
+            val response = api.getFavourites(API_KEY, subId)
+            if (response.isSuccessful) {
+                Result.success(response.body() ?: emptyList())
+            } else {
+                Result.failure(Exception("Failed to fetch favourites: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun addToFavourites(imageId: String, subId: String? = null): Result<CreateFavouriteResponse> {
+        return try {
+            val request = CreateFavouriteRequest(imageId, subId)
+            val response = api.createFavourite(API_KEY, request = request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Failed to add to favourites: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun removeFromFavourites(favouriteId: Int): Result<Unit> {
+        return try {
+            val response = api.deleteFavourite(API_KEY, favouriteId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Failed to remove from favourites: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    // Voting methods
+    suspend fun getVotes(subId: String? = null): Result<List<Vote>> {
+        return try {
+            val response = api.getVotes(API_KEY, subId)
+            if (response.isSuccessful) {
+                Result.success(response.body() ?: emptyList())
+            } else {
+                Result.failure(Exception("Failed to fetch votes: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun voteOnImage(imageId: String, value: Int, subId: String? = null): Result<CreateVoteResponse> {
+        return try {
+            val request = CreateVoteRequest(imageId, subId, value)
+            val response = api.createVote(API_KEY, request = request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Failed to vote on image: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun deleteVote(voteId: Int): Result<Unit> {
+        return try {
+            val response = api.deleteVote(API_KEY, voteId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Failed to delete vote: ${response.message()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
