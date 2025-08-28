@@ -65,7 +65,8 @@ enum class UploadState {
 fun DogBreedIdentificationScreen(
     onNavigate: (String) -> Unit,
     onTakePhoto: () -> Unit,
-    onUploadPhoto: () -> Unit
+    onUploadPhoto: () -> Unit,
+    onChatbotClick: () -> Unit = {}
 ) {
     var uploadState by remember { mutableStateOf(UploadState.IDLE) }
     var uploadProgress by remember { mutableFloatStateOf(0f) }
@@ -94,7 +95,7 @@ fun DogBreedIdentificationScreen(
             BreedifyBottomNavigation(
                 currentRoute = "camera",
                 onNavigate = onNavigate,
-                onChatbotClick = { /* Handle chatbot click */ }
+                onChatbotClick = onChatbotClick
             )
         },
         containerColor = BreedifyColors.Background
