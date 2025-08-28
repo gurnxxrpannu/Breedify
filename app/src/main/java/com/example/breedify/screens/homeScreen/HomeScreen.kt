@@ -205,12 +205,22 @@ private fun HeaderSection() {
         Spacer(modifier = Modifier.height(24.dp))
         
         // Main title and subtitle (inspired by the design)
-        Text(
-            text = "Breedify",
-            fontSize = 40.sp,
-            fontWeight = FontWeight.Bold,
-            color = BreedifyColors.TextPrimary,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Text(
+                text = "Breedify",
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
+                color = BreedifyColors.TextPrimary,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "🐾",
+                fontSize = 36.sp
+            )
+        }
         
         Text(
             text = "Your favorite dog breeds",
