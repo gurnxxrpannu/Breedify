@@ -45,14 +45,16 @@ fun DogDetailScreen(
     var isFavorite by remember { mutableStateOf(false) }
     var breedDetails by remember { mutableStateOf(breed) }
     var isLoading by remember { mutableStateOf(false) }
+    var favouriteId by remember { mutableStateOf<Int?>(null) }
     
     val repository = remember { DogRepository() }
     val scope = rememberCoroutineScope()
     
-    // Load detailed breed information
+    // Load detailed breed information and check if it's favorited
     LaunchedEffect(breed.id) {
         isLoading = true
         scope.launch {
+            // Load breed details
             repository.getBreedDetails(breed.id).fold(
                 onSuccess = { details ->
                     // Preserve the original image if the detailed response doesn't have one
@@ -66,6 +68,23 @@ fun DogDetailScreen(
                     // Keep original breed data if detailed fetch fails
                 }
             )
+            
+            // Check if this breed is in favorites
+            if (breedDetails.image?.id != null) {
+                repository.getFavourites().fold(
+                    onSuccess = { favourites ->
+                        val existingFavourite = favourites.find { it.image_id == breedDetails.image?.id }
+                        if (existingFavourite != null) {
+                            isFavorite = true
+                            favouriteId = existingFavourite.id
+                        }
+                    },
+                    onFailure = { 
+                        // Handle error silently
+                    }
+                )
+            }
+            
             isLoading = false
         }
     }
@@ -109,7 +128,37 @@ fun DogDetailScreen(
             HeroImageSection(
                 breed = breedDetails,
                 isFavorite = isFavorite,
-                onFavoriteClick = { isFavorite = !isFavorite }
+                onFavoriteClick = {
+                    scope.launch {
+                        if (breedDetails.image?.id != null) {
+                            if (isFavorite) {
+                                // Remove from favorites
+                                favouriteId?.let { id ->
+                                    repository.removeFromFavourites(id).fold(
+                                        onSuccess = {
+                                            isFavorite = false
+                                            favouriteId = null
+                                        },
+                                        onFailure = { 
+                                            // Handle error - could show a toast
+                                        }
+                                    )
+                                }
+                            } else {
+                                // Add to favorites
+                                repository.addToFavourites(breedDetails.image!!.id).fold(
+                                    onSuccess = { response ->
+                                        isFavorite = true
+                                        favouriteId = response.id
+                                    },
+                                    onFailure = { 
+                                        // Handle error - could show a toast
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             )
             
             Spacer(modifier = Modifier.height(24.dp))
