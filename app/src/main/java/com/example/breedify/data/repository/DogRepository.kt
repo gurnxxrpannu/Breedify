@@ -71,6 +71,19 @@ class DogRepository {
         }
     }
     
+    suspend fun getRandomFacts(limit: Int = 1): Result<List<BreedFact>> {
+        return try {
+            val response = api.getRandomFacts(API_KEY, limit)
+            if (response.isSuccessful) {
+                Result.success(response.body() ?: emptyList())
+            } else {
+                Result.failure(Exception("Failed to fetch random facts: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
     // Favourites methods
     suspend fun getFavourites(subId: String? = null): Result<List<Favourite>> {
         return try {
