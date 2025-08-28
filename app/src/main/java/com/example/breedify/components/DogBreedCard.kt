@@ -40,7 +40,7 @@ fun DogBreedCard(
     // Calculate dimensions based on focus state
     val cardWidth = if (isFocused) 165.dp else 130.dp
     val cardHeight = if (isFocused) 260.dp else 220.dp // Further increased height for bigger image
-    val imageHeight = if (isFocused) 200.dp else 165.dp // Further increased image height
+    val imageHeight = if (isFocused) 220.dp else 185.dp // Increased image height even more
 
     // 1. TAP ANIMATION using interaction source
     val interactionSource = remember { MutableInteractionSource() }
@@ -171,22 +171,22 @@ fun DogBreedCard(
                     }
                 }
 
-                // Name Section - Only show breed name
+                // Name Section - Smaller text space
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(12.dp),
+                        .padding(horizontal = 8.dp, vertical = 6.dp), // Reduced padding
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = breed.name,
                         style = TextStyle(
-                            fontSize = if (isFocused) 16.sp else 14.sp,
+                            fontSize = if (isFocused) 14.sp else 12.sp, // Reduced font size
                             fontWeight = FontWeight(600),
                             color = Color(0xFF2D3748), // Changed to dark text for white background
-                            lineHeight = if (isFocused) 18.sp else 16.sp
+                            lineHeight = if (isFocused) 16.sp else 14.sp // Reduced line height
                         ),
-                        maxLines = 2,
+                        maxLines = 1, // Reduced to single line to save space
                         overflow = TextOverflow.Ellipsis
                     )
                 }
@@ -204,7 +204,7 @@ fun SkeletonDogBreedCard(
     // Calculate dimensions based on focus state
     val cardWidth = if (isFocused) 165.dp else 130.dp
     val cardHeight = if (isFocused) 260.dp else 220.dp // Further increased height to match main card
-    val imageHeight = if (isFocused) 200.dp else 165.dp // Further increased image height to match main card
+    val imageHeight = if (isFocused) 220.dp else 185.dp // Increased image height to match main card
 
     val infiniteTransition = rememberInfiniteTransition(label = "skeleton_transition")
 
@@ -306,18 +306,18 @@ fun SkeletonDogBreedCard(
                         }
                 )
 
-                // Content skeleton - Only name skeleton
+                // Content skeleton - Smaller text space
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(12.dp),
+                        .padding(horizontal = 8.dp, vertical = 6.dp), // Reduced padding to match main card
                     contentAlignment = Alignment.Center
                 ) {
-                    // Title skeleton - centered
+                    // Title skeleton - centered and smaller
                     SkeletonBox(
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
-                            .height(if (isFocused) 18.sp.value.dp else 16.sp.value.dp),
+                            .height(if (isFocused) 16.sp.value.dp else 14.sp.value.dp), // Reduced height to match smaller text
                         alpha = pulseAlpha,
                         shimmerTranslateAnim = shimmerTranslateAnim
                     )
