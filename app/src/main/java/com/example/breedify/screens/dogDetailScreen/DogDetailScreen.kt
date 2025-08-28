@@ -411,7 +411,7 @@ private fun StatItem(
 private fun AboutSection(breed: Breed) {
     Column {
         Text(
-            text = "About",
+            text = "Short Description",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = BreedifyColors.TextPrimary
