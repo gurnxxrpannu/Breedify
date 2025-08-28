@@ -1,8 +1,11 @@
 package com.example.breedify.data.api
 
 import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -31,6 +34,60 @@ interface DogApiService {
         @Path("breed_id") breedId: Int,
         @Query("limit") limit: Int = 5
     ): Response<List<BreedFact>>
+    
+    // Favourites endpoints
+    @GET("v1/favourites")
+    suspend fun getFavourites(
+        @Header("x-api-key") apiKey: String,
+        @Query("sub_id") subId: String? = null,
+        @Query("limit") limit: Int = 100
+    ): Response<List<Favourite>>
+    
+    @POST("v1/favourites")
+    suspend fun createFavourite(
+        @Header("x-api-key") apiKey: String,
+        @Header("Content-Type") contentType: String = "application/json",
+        @Body request: CreateFavouriteRequest
+    ): Response<CreateFavouriteResponse>
+    
+    @GET("v1/favourites/{favourite_id}")
+    suspend fun getFavourite(
+        @Header("x-api-key") apiKey: String,
+        @Path("favourite_id") favouriteId: Int
+    ): Response<Favourite>
+    
+    @DELETE("v1/favourites/{favourite_id}")
+    suspend fun deleteFavourite(
+        @Header("x-api-key") apiKey: String,
+        @Path("favourite_id") favouriteId: Int
+    ): Response<Unit>
+    
+    // Votes endpoints
+    @GET("v1/votes")
+    suspend fun getVotes(
+        @Header("x-api-key") apiKey: String,
+        @Query("sub_id") subId: String? = null,
+        @Query("limit") limit: Int = 100
+    ): Response<List<Vote>>
+    
+    @POST("v1/votes")
+    suspend fun createVote(
+        @Header("x-api-key") apiKey: String,
+        @Header("Content-Type") contentType: String = "application/json",
+        @Body request: CreateVoteRequest
+    ): Response<CreateVoteResponse>
+    
+    @GET("v1/votes/{vote_id}")
+    suspend fun getVote(
+        @Header("x-api-key") apiKey: String,
+        @Path("vote_id") voteId: Int
+    ): Response<Vote>
+    
+    @DELETE("v1/votes/{vote_id}")
+    suspend fun deleteVote(
+        @Header("x-api-key") apiKey: String,
+        @Path("vote_id") voteId: Int
+    ): Response<Unit>
 }
 
 data class Breed(
@@ -67,4 +124,44 @@ data class Height(
 data class BreedFact(
     val id: Int,
     val fact: String
+)
+
+data class Favourite(
+    val id: Int,
+    val user_id: String,
+    val image_id: String,
+    val sub_id: String? = null,
+    val created_at: String,
+    val image: BreedImage
+)
+
+data class CreateFavouriteRequest(
+    val image_id: String,
+    val sub_id: String? = null
+)
+
+data class CreateFavouriteResponse(
+    val message: String,
+    val id: Int
+)
+
+data class Vote(
+    val id: Int,
+    val user_id: String,
+    val image_id: String,
+    val sub_id: String? = null,
+    val created_at: String,
+    val value: Int, // 1 for upvote, 0 for downvote
+    val image: BreedImage
+)
+
+data class CreateVoteRequest(
+    val image_id: String,
+    val sub_id: String? = null,
+    val value: Int // 1 for upvote, 0 for downvote
+)
+
+data class CreateVoteResponse(
+    val message: String,
+    val id: Int
 )
