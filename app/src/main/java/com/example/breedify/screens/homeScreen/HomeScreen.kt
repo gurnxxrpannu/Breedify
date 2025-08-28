@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -141,6 +142,11 @@ fun HomeScreen(
             
             // Dog Facts section
             DogFactsSection()
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            // Breed Specific Facts section
+            BreedSpecificFactsSection(breeds = trendingBreeds)
             
                 Spacer(modifier = Modifier.height(32.dp)) // Space for bottom navigation
             }
@@ -559,6 +565,359 @@ private fun DogFactsSection() {
                     textAlign = TextAlign.Center,
                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BreedSpecificFactsSection(breeds: List<Breed>) {
+    var selectedBreed by remember { mutableStateOf<Breed?>(null) }
+    var breedFacts by remember { mutableStateOf<List<BreedFact>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(false) }
+    var showBreedSelector by remember { mutableStateOf(false) }
+    
+    val repository = remember { DogRepository() }
+    val scope = rememberCoroutineScope()
+    
+    fun loadBreedFacts(breed: Breed) {
+        isLoading = true
+        scope.launch {
+            try {
+                repository.getBreedFacts(breed.id, 3).fold(
+                    onSuccess = { facts ->
+                        breedFacts = if (facts.isNotEmpty()) {
+                            facts
+                        } else {
+                            // Fallback interesting facts based on breed name
+                            getInterestingBreedFacts(breed.name)
+                        }
+                    },
+                    onFailure = { 
+                        // Fallback facts on API failure
+                        breedFacts = getInterestingBreedFacts(breed.name)
+                    }
+                )
+            } catch (e: Exception) {
+                breedFacts = getInterestingBreedFacts(breed.name)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+    
+    Column {
+        Text(
+            text = "Breed-Specific Facts",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = BreedifyColors.TextPrimary,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        
+        Text(
+            text = "Learn fascinating facts about specific dog breeds",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Normal,
+            color = BreedifyColors.TextSecondary,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        // Breed selector card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .clickable { showBreedSelector = true },
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = BreedifyColors.CardBackground
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Breed selector icon
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(
+                            BreedifyColors.Secondary.copy(alpha = 0.1f),
+                            CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "🐕‍🦺",
+                        fontSize = 32.sp
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                if (selectedBreed == null) {
+                    Text(
+                        text = "Choose a Breed",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = BreedifyColors.TextPrimary,
+                        textAlign = TextAlign.Center
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = "Tap to select a breed and discover amazing facts about it!",
+                        fontSize = 14.sp,
+                        color = BreedifyColors.TextSecondary,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 20.sp
+                    )
+                } else {
+                    Text(
+                        text = selectedBreed!!.name,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = BreedifyColors.Primary,
+                        textAlign = TextAlign.Center
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = BreedifyColors.Primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Loading facts...",
+                            fontSize = 14.sp,
+                            color = BreedifyColors.TextSecondary
+                        )
+                    } else {
+                        // Display facts
+                        breedFacts.forEachIndexed { index, fact ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Text(
+                                    text = "•",
+                                    fontSize = 16.sp,
+                                    color = BreedifyColors.Primary,
+                                    modifier = Modifier.padding(end = 8.dp, top = 2.dp)
+                                )
+                                Text(
+                                    text = fact.fact,
+                                    fontSize = 14.sp,
+                                    color = BreedifyColors.TextPrimary,
+                                    lineHeight = 20.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            if (index < breedFacts.size - 1) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                Button(
+                    onClick = { showBreedSelector = true },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BreedifyColors.Secondary
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = if (selectedBreed == null) "🔍 Select Breed" else "🔄 Change Breed",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+            }
+        }
+    }
+    
+    // Breed selector dialog
+    if (showBreedSelector) {
+        BreedSelectorDialog(
+            breeds = breeds,
+            onBreedSelected = { breed ->
+                selectedBreed = breed
+                showBreedSelector = false
+                loadBreedFacts(breed)
+            },
+            onDismiss = { showBreedSelector = false }
+        )
+    }
+}
+
+private fun getInterestingBreedFacts(breedName: String): List<BreedFact> {
+    return when {
+        breedName.contains("Golden Retriever", ignoreCase = true) -> listOf(
+            BreedFact(0, "Golden Retrievers were originally bred in Scotland in the 1860s by Lord Tweedmouth."),
+            BreedFact(1, "They have webbed feet that make them excellent swimmers!"),
+            BreedFact(2, "Golden Retrievers can carry an egg in their mouth without breaking it due to their soft bite.")
+        )
+        breedName.contains("Labrador", ignoreCase = true) -> listOf(
+            BreedFact(0, "Labradors were originally bred to help fishermen haul nets and catch fish in Newfoundland."),
+            BreedFact(1, "They have a double-layered coat that's water-repellent and helps them stay warm in cold water."),
+            BreedFact(2, "Labs are the most popular dog breed in the US and have been for over 30 years!")
+        )
+        breedName.contains("German Shepherd", ignoreCase = true) -> listOf(
+            BreedFact(0, "German Shepherds were the first guide dogs and are still widely used in service roles today."),
+            BreedFact(1, "They can learn a new command in just 5 repetitions and obey it 95% of the time."),
+            BreedFact(2, "Rin Tin Tin, a famous German Shepherd, was rescued from a WWI battlefield and became a movie star!")
+        )
+        breedName.contains("Bulldog", ignoreCase = true) -> listOf(
+            BreedFact(0, "Bulldogs were originally bred for bull-baiting, a cruel sport that was banned in 1835."),
+            BreedFact(1, "They can't swim well due to their heavy heads and short legs, so they need life jackets near water."),
+            BreedFact(2, "Bulldogs are the mascot for over 40 universities and are symbols of determination and courage.")
+        )
+        breedName.contains("Poodle", ignoreCase = true) -> listOf(
+            BreedFact(0, "Poodles were originally water retrievers, and their fancy haircuts served a practical purpose!"),
+            BreedFact(1, "They're considered the second smartest dog breed and can learn over 400 words."),
+            BreedFact(2, "Poodles come in three sizes: Standard, Miniature, and Toy, but they're all the same breed.")
+        )
+        breedName.contains("Beagle", ignoreCase = true) -> listOf(
+            BreedFact(0, "Beagles have over 220 million scent receptors (humans have only 5 million!)."),
+            BreedFact(1, "Snoopy from the Peanuts comic strip is the world's most famous Beagle."),
+            BreedFact(2, "Beagles were bred to hunt in packs and have a distinctive howl called 'baying'.")
+        )
+        breedName.contains("Husky", ignoreCase = true) -> listOf(
+            BreedFact(0, "Huskies can run over 100 miles a day and were used to deliver medicine during the 1925 serum run to Nome."),
+            BreedFact(1, "Their eyes can be blue, brown, or even one of each color - a condition called heterochromia."),
+            BreedFact(2, "Huskies rarely bark but are very vocal with howls, whines, and 'talking' sounds.")
+        )
+        breedName.contains("Rottweiler", ignoreCase = true) -> listOf(
+            BreedFact(0, "Rottweilers were used by Roman armies to herd cattle and guard supplies."),
+            BreedFact(1, "They're natural protectors but are also known as 'gentle giants' with their families."),
+            BreedFact(2, "Rottweilers have one of the strongest bite forces among domestic dogs at 328 PSI.")
+        )
+        breedName.contains("Yorkshire", ignoreCase = true) || breedName.contains("Yorkie", ignoreCase = true) -> listOf(
+            BreedFact(0, "Yorkshire Terriers were originally bred to catch rats in textile mills during the Industrial Revolution."),
+            BreedFact(1, "Despite their tiny size, Yorkies have the personality of a much larger dog and are fearless."),
+            BreedFact(2, "The smallest dog ever recorded was a Yorkie named Sylvia who weighed only 4 ounces!")
+        )
+        breedName.contains("Dachshund", ignoreCase = true) -> listOf(
+            BreedFact(0, "Dachshunds were bred to hunt badgers in their dens - their long body helped them fit in tunnels."),
+            BreedFact(1, "They're also called 'wiener dogs' or 'sausage dogs' due to their distinctive shape."),
+            BreedFact(2, "Dachshunds are surprisingly fast and can reach speeds up to 15-20 mph despite their short legs!")
+        )
+        else -> listOf(
+            BreedFact(0, "$breedName dogs have unique characteristics that make them special companions."),
+            BreedFact(1, "Every dog breed has fascinating history and traits developed over centuries of selective breeding."),
+            BreedFact(2, "This breed has loyal fans worldwide who appreciate their distinctive personality and appearance.")
+        )
+    }
+}
+
+@Composable
+private fun BreedSelectorDialog(
+    breeds: List<Breed>,
+    onBreedSelected: (Breed) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(500.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = BreedifyColors.CardBackground
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Select a Breed",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = BreedifyColors.TextPrimary
+                    )
+                    
+                    TextButton(onClick = onDismiss) {
+                        Text("✕", color = BreedifyColors.TextSecondary, fontSize = 18.sp)
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(breeds) { breed ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onBreedSelected(breed) },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = BreedifyColors.Primary.copy(alpha = 0.05f)
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .background(
+                                            BreedifyColors.Primary.copy(alpha = 0.1f),
+                                            CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "🐕",
+                                        fontSize = 20.sp
+                                    )
+                                }
+                                
+                                Spacer(modifier = Modifier.width(16.dp))
+                                
+                                Text(
+                                    text = breed.name,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = BreedifyColors.TextPrimary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                
+                                Text(
+                                    text = "→",
+                                    fontSize = 16.sp,
+                                    color = BreedifyColors.Primary
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
