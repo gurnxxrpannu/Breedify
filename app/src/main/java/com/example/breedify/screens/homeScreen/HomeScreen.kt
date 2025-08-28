@@ -96,7 +96,7 @@ fun HomeScreen(
                     .padding(horizontal = 20.dp)
                     .padding(paddingValues)
             ) {
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             
             // Header with title and subtitle inspired by the design
             HeaderSection()
