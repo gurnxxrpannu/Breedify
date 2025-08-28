@@ -68,9 +68,19 @@ dependencies {
     // Image loading
     implementation("io.coil-kt:coil-compose:2.4.0")
     
-    // TensorFlow Lite
-    implementation("org.tensorflow:tensorflow-lite:2.14.0")
+    // TensorFlow Lite - Stable version for compatibility
+    implementation("org.tensorflow:tensorflow-lite:2.13.0")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+    implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.4")
+    
+    // Force resolution strategy for conflicting dependencies
+    configurations.all {
+        resolutionStrategy {
+            force("org.tensorflow:tensorflow-lite:2.13.0")
+            force("org.tensorflow:tensorflow-lite-api:2.13.0")
+        }
+        exclude(group = "com.google.ai.edge.litert")
+    }
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
