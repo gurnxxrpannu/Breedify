@@ -14,6 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -535,7 +539,7 @@ fun DogBreedIdentificationScreen(
         }
 
         item {
-            // ML Model Features Section
+            // ML Model Features Carousel Section
             Column {
                 Text(
                     text = "Our Model Features",
@@ -546,39 +550,168 @@ fun DogBreedIdentificationScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    FeatureItem(
-                        icon = "🐾",
-                        title = "150+ Dog Breeds",
-                        description = "Covers most popular breeds"
-                    )
-
-                    FeatureItem(
-                        icon = "⚡",
-                        title = "Fast Predictions",
-                        description = "Results in under 2 seconds"
-                    )
-
-                    FeatureItem(
-                        icon = "✅",
-                        title = "High Accuracy",
-                        description = "Over 90% accuracy in tests"
-                    )
-
-                    FeatureItem(
-                        icon = "📶",
-                        title = "Works Offline",
-                        description = "No internet needed"
-                    )
-                }
+                ModelFeaturesCarousel()
             }
         }
 
         item {
             Spacer(modifier = Modifier.height(32.dp))
         }
+        }
+    }
+}
+
+data class ModelFeature(
+    val icon: String,
+    val title: String,
+    val description: String
+)
+
+@Composable
+fun ModelFeaturesCarousel() {
+    val features = listOf(
+        ModelFeature(
+            icon = "🐾",
+            title = "150+ Dog Breeds",
+            description = "Our advanced ML model can identify over 150 different dog breeds with remarkable precision and accuracy."
+        ),
+        ModelFeature(
+            icon = "⚡",
+            title = "Lightning Fast",
+            description = "Get instant results in under 2 seconds! Perfect for quick breed identification on the go."
+        ),
+        ModelFeature(
+            icon = "✅",
+            title = "High Accuracy",
+            description = "Trained on millions of dog images, achieving over 90% accuracy in real-world testing scenarios."
+        ),
+        ModelFeature(
+            icon = "📶",
+            title = "Works Offline",
+            description = "No internet needed! Our model runs entirely on your device, ensuring privacy and consistency."
+        ),
+        ModelFeature(
+            icon = "🎯",
+            title = "Breed Details",
+            description = "Get comprehensive information about each breed including characteristics and temperament."
+        ),
+        ModelFeature(
+            icon = "🔄",
+            title = "Continuous Learning",
+            description = "Our model is regularly updated with new data to improve accuracy and add more breeds."
+        )
+    )
+
+    val pagerState = rememberPagerState(pageCount = { features.size })
+    var lastUserInteraction by remember { mutableStateOf(System.currentTimeMillis()) }
+
+    // Track user interaction
+    LaunchedEffect(pagerState.isScrollInProgress) {
+        if (pagerState.isScrollInProgress) {
+            lastUserInteraction = System.currentTimeMillis()
+        }
+    }
+
+    // Auto-scroll effect - simplified logic
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(2500) // Wait 2.5 seconds
+            
+            // Check if user hasn't interacted recently and pager is not currently scrolling
+            val timeSinceInteraction = System.currentTimeMillis() - lastUserInteraction
+            if (timeSinceInteraction >= 2500 && !pagerState.isScrollInProgress) {
+                val nextPage = (pagerState.currentPage + 1) % features.size
+                pagerState.animateScrollToPage(
+                    page = nextPage,
+                    animationSpec = tween(
+                        durationMillis = 800,
+                        easing = FastOutSlowInEasing
+                    )
+                )
+            }
+        }
+    }
+
+    Column {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 48.dp),
+            pageSpacing = 16.dp
+        ) { page ->
+            FeatureCard(feature = features[page])
+        }
+
+        // Page indicators
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            repeat(features.size) { index ->
+                val isSelected = pagerState.currentPage == index
+                Box(
+                    modifier = Modifier
+                        .size(if (isSelected) 12.dp else 8.dp)
+                        .background(
+                            color = if (isSelected) BreedifyColors.Primary else BreedifyColors.Primary.copy(alpha = 0.3f),
+                            shape = CircleShape
+                        )
+                )
+                if (index < features.size - 1) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FeatureCard(feature: ModelFeature) {
+    Card(
+        modifier = Modifier
+            .width(320.dp)
+            .height(260.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = BreedifyColors.CardBackground
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Big feature icon
+            Text(
+                text = feature.icon,
+                fontSize = 64.sp,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            // Feature title
+            Text(
+                text = feature.title,
+                style = MaterialTheme.typography.headlineSmall,
+                color = BreedifyColors.TextPrimary,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            // Feature description
+            Text(
+                text = feature.description,
+                style = MaterialTheme.typography.bodyLarge,
+                color = BreedifyColors.TextSecondary,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp
+            )
         }
     }
 }
