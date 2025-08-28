@@ -19,12 +19,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.breedify.R
 import com.example.breedify.data.api.Breed
+import com.example.breedify.data.api.BreedFact
 import com.example.breedify.data.repository.DogRepository
 import com.example.breedify.navigation.BreedifyBottomNavigation
 import kotlinx.coroutines.launch
@@ -48,7 +50,8 @@ fun HomeScreen(
     onUploadPhoto: () -> Unit = {},
     onOpenCamera: () -> Unit = {},
     onBreedClick: (Breed) -> Unit = {},
-    onNavigate: (String) -> Unit = {}
+    onNavigate: (String) -> Unit = {},
+    onChatbotClick: () -> Unit = {}
 ) {
     var showChatbot by remember { mutableStateOf(false) }
     var showImageSourceDialog by remember { mutableStateOf(false) }
@@ -98,7 +101,7 @@ fun HomeScreen(
             BreedifyBottomNavigation(
                 currentRoute = "home",
                 onNavigate = onNavigate,
-                onChatbotClick = { showChatbot = true }
+                onChatbotClick = onChatbotClick
             )
         },
         containerColor = BreedifyColors.Background
@@ -136,10 +139,8 @@ fun HomeScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            // Identify a Breed section
-            IdentifyBreedSection(
-                onShowDialog = { showImageSourceDialog = true }
-            )
+            // Dog Facts section
+            DogFactsSection()
             
                 Spacer(modifier = Modifier.height(32.dp)) // Space for bottom navigation
             }
@@ -370,12 +371,78 @@ private fun BreedCard(
 }
 
 @Composable
-private fun IdentifyBreedSection(
-    onShowDialog: () -> Unit
-) {
+private fun DogFactsSection() {
+    var currentFact by remember { mutableStateOf<BreedFact?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    var isRefreshing by remember { mutableStateOf(false) }
+    
+    val repository = remember { DogRepository() }
+    val scope = rememberCoroutineScope()
+    
+    // Load initial fact
+    LaunchedEffect(Unit) {
+        isLoading = true
+        scope.launch {
+            repository.getRandomFacts(1).fold(
+                onSuccess = { facts ->
+                    if (facts.isNotEmpty()) {
+                        currentFact = facts.first()
+                    }
+                },
+                onFailure = { 
+                    // Handle error - could show fallback fact
+                    currentFact = BreedFact(0, "Dogs have been human companions for over 15,000 years!")
+                }
+            )
+            isLoading = false
+        }
+    }
+    
+    fun refreshFact() {
+        if (isRefreshing) return
+        isRefreshing = true
+        scope.launch {
+            try {
+                repository.getRandomFacts(1).fold(
+                    onSuccess = { facts ->
+                        if (facts.isNotEmpty()) {
+                            currentFact = facts.first()
+                        } else {
+                            // Fallback to a random hardcoded fact if API returns empty
+                            val fallbackFacts = listOf(
+                                "Dogs have been human companions for over 15,000 years!",
+                                "A dog's sense of smell is 10,000 to 100,000 times stronger than humans!",
+                                "Dogs can learn over 150 words and can count up to four or five!",
+                                "The average dog can run about 19 miles per hour at full speed!",
+                                "Dogs have three eyelids - an upper lid, lower lid, and a third lid for protection!"
+                            )
+                            currentFact = BreedFact(0, fallbackFacts.random())
+                        }
+                    },
+                    onFailure = { 
+                        // Use fallback facts on API failure
+                        val fallbackFacts = listOf(
+                            "Dogs have been human companions for over 15,000 years!",
+                            "A dog's sense of smell is 10,000 to 100,000 times stronger than humans!",
+                            "Dogs can learn over 150 words and can count up to four or five!",
+                            "The average dog can run about 19 miles per hour at full speed!",
+                            "Dogs have three eyelids - an upper lid, lower lid, and a third lid for protection!"
+                        )
+                        currentFact = BreedFact(0, fallbackFacts.random())
+                    }
+                )
+            } catch (e: Exception) {
+                // Handle any unexpected errors
+                currentFact = BreedFact(0, "Dogs are amazing creatures with incredible loyalty and intelligence!")
+            } finally {
+                isRefreshing = false
+            }
+        }
+    }
+    
     Column {
         Text(
-            text = "New Breeds",
+            text = "Fun Dog Facts",
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = BreedifyColors.TextPrimary,
@@ -383,83 +450,115 @@ private fun IdentifyBreedSection(
         )
         
         Text(
-            text = "Identify Breed of any dog just with a click",
+            text = "Discover amazing facts about our furry friends",
             fontSize = 14.sp,
             fontWeight = FontWeight.Normal,
             color = BreedifyColors.TextSecondary,
             modifier = Modifier.padding(bottom = 16.dp)
         )
         
-        // Single card layout inspired by the design
+        // Fact card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp)
-                .clickable { onShowDialog() },
+                .wrapContentHeight()
+                .clickable { refreshFact() },
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color.White
+                containerColor = BreedifyColors.CardBackground
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ) {
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column {
-                    Text(
-                        text = "Identify Breed",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = BreedifyColors.TextPrimary
-                    )
-                    Text(
-                        text = "Upload or take a photo",
-                        fontSize = 14.sp,
-                        color = BreedifyColors.TextSecondary,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // Phone icon
-                        Icon(
-                            imageVector = Icons.Default.Search, // Using search as placeholder
-                            contentDescription = "Phone",
-                            tint = BreedifyColors.TextSecondary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        // Email icon  
-                        Icon(
-                            imageVector = Icons.Default.Search, // Using search as placeholder
-                            contentDescription = "Email",
-                            tint = BreedifyColors.TextSecondary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-                
-                // Dog illustration placeholder
+                // Fact icon
                 Box(
                     modifier = Modifier
-                        .size(60.dp)
+                        .size(64.dp)
                         .background(
-                            BreedifyColors.Secondary.copy(alpha = 0.1f),
-                            RoundedCornerShape(12.dp)
+                            BreedifyColors.Primary.copy(alpha = 0.1f),
+                            CircleShape
                         ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "🐕",
+                        text = "💡",
                         fontSize = 32.sp
                     )
                 }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                if (isLoading) {
+                    // Loading state
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .background(
+                                BreedifyColors.SearchBackground,
+                                RoundedCornerShape(12.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = BreedifyColors.Primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                } else {
+                    // Fact content
+                    Text(
+                        text = currentFact?.fact ?: "Loading amazing dog facts...",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = BreedifyColors.TextPrimary,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 24.sp,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                // Refresh button
+                Button(
+                    onClick = { refreshFact() },
+                    enabled = !isRefreshing,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BreedifyColors.Primary
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (isRefreshing) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Text(
+                        text = if (isRefreshing) "Getting New Fact..." else "🔄 Get New Fact",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Text(
+                    text = "Tap anywhere on the card or button to get a new fact!",
+                    fontSize = 12.sp,
+                    color = BreedifyColors.TextSecondary,
+                    textAlign = TextAlign.Center,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
             }
         }
     }
