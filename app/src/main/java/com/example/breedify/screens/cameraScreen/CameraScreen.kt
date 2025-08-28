@@ -482,57 +482,49 @@ fun DogBreedIdentificationScreen(
             // Gemini AI Section
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = BreedifyColors.CardBackground
                 ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(28.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "🤖",
-                        fontSize = 48.sp,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    
-                    Text(
                         text = "Need a Second Opinion?",
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.headlineMedium,
                         color = BreedifyColors.TextPrimary,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
-
-                    Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "Well, our model can be wrong sometimes. We can go online and search for more accurate results using advanced AI.",
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = "Our model can be wrong sometimes. Get more accurate results using advanced AI technology for breed identification.",
+                        style = MaterialTheme.typography.bodyLarge,
                         color = BreedifyColors.TextSecondary,
                         textAlign = TextAlign.Center,
-                        lineHeight = 20.sp
+                        lineHeight = 24.sp,
+                        modifier = Modifier.padding(bottom = 24.dp)
                     )
-
-                    Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
                         onClick = { /* TODO: Implement Gemini functionality */ },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = BreedifyColors.Secondary
+                            containerColor = BreedifyColors.Primary
                         )
                     ) {
                         Text(
-                            text = "🔍 Check Breed with Gemini",
+                            text = "Check Breed with Gemini",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(vertical = 4.dp)
+                            modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }
                 }
