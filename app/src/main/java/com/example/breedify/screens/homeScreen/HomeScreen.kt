@@ -190,11 +190,12 @@ private fun HeaderSection() {
                     .background(
                         BreedifyColors.Secondary,
                         CircleShape
-                    ),
+                    )
+                    .clickable { /* Handle profile click */ },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "✓",
+                    text = "👤",
                     fontSize = 20.sp,
                     color = Color.White
                 )
