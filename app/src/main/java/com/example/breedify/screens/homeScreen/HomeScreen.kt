@@ -60,14 +60,31 @@ fun HomeScreen(
     val repository = remember { DogRepository() }
     val scope = rememberCoroutineScope()
     
-    // Load trending breeds on screen load
+    // Load favorite breeds on screen load
     LaunchedEffect(Unit) {
         isLoading = true
         scope.launch {
             repository.getAllBreeds().fold(
                 onSuccess = { breeds ->
-                    // Take first 10 breeds as "trending"
-                    trendingBreeds = breeds.take(10)
+                    // Filter for popular/favorite dog breeds
+                    val favoriteBreedNames = listOf(
+                        "Golden Retriever", "Labrador Retriever", "German Shepherd", 
+                        "French Bulldog", "Bulldog", "Poodle", "Beagle", "Rottweiler",
+                        "Yorkshire Terrier", "Dachshund", "Siberian Husky", "Boxer"
+                    )
+                    
+                    val favoriteBreeds = breeds.filter { breed ->
+                        favoriteBreedNames.any { favName ->
+                            breed.name.contains(favName, ignoreCase = true)
+                        }
+                    }.take(10) // Limit to 10 breeds
+                    
+                    // If we don't find enough favorite breeds, supplement with first breeds
+                    trendingBreeds = if (favoriteBreeds.size >= 8) {
+                        favoriteBreeds
+                    } else {
+                        favoriteBreeds + breeds.take(10 - favoriteBreeds.size)
+                    }
                 },
                 onFailure = { 
                     // Handle error - could show fallback data
@@ -111,8 +128,8 @@ fun HomeScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            // Trending Breeds section
-            TrendingBreedsSection(
+            // Favorite Breeds section
+            FavoriteBreedsSection(
                 breeds = trendingBreeds,
                 isLoading = isLoading,
                 onBreedClick = onBreedClick
@@ -268,14 +285,14 @@ private fun SearchBar(
 }
 
 @Composable
-private fun TrendingBreedsSection(
+private fun FavoriteBreedsSection(
     breeds: List<Breed>,
     isLoading: Boolean,
     onBreedClick: (Breed) -> Unit
 ) {
     Column {
         Text(
-            text = "Recommended",
+            text = "Favorite Dog Breeds",
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = BreedifyColors.TextPrimary,
