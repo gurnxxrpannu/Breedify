@@ -1,6 +1,8 @@
 package com.example.breedify.navigation
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,25 +14,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.breedify.R
 import kotlin.math.sqrt
 
 sealed class BottomNavItem(
     val route: String,
     val title: String,
-    val emoji: String
+    val emoji: String? = null,
+    @DrawableRes val drawableRes: Int? = null
 ) {
-    object Home : BottomNavItem("home", "Home", "🏠")
-    object Explore : BottomNavItem("explore", "Explore", "🔍")
-    object Camera : BottomNavItem("camera", "Camera", "📷")
-    object Profile : BottomNavItem("profile", "Profile", "👤")
+    object Home : BottomNavItem("home", "Home", drawableRes = R.drawable.dog_home_icon)
+    object Explore : BottomNavItem("explore", "Explore", emoji = "🦴")
+    object Camera : BottomNavItem("camera", "Camera", drawableRes = R.drawable.god_camera_icon)
+    object Profile : BottomNavItem("profile", "Profile", emoji = "🐾")
 }
 
 // Colors for the new bottom navigation design
@@ -190,11 +191,34 @@ private fun BottomNavItemView(
             .clickable { onClick() }
             .padding(8.dp)
     ) {
-        Text(
-            text = item.emoji,
-            fontSize = if (isSelected) 26.sp else 22.sp,
-            color = if (isSelected) BottomNavColors.Selected else BottomNavColors.Unselected
-        )
+        // Use drawable icon if available, otherwise use emoji
+        if (item.drawableRes != null) {
+            // Make camera icon bigger than other icons
+            val iconSize = when (item.route) {
+                "camera" -> if (isSelected) 45.dp else 28.dp // Bigger camera icon
+                else -> if (isSelected) 28.dp else 24.dp // Normal size for other icons
+            }
+            
+            Image(
+                painter = painterResource(id = item.drawableRes),
+                contentDescription = item.title,
+                modifier = Modifier
+                    .size(iconSize)
+                    .graphicsLayer {
+                        // Add slight scaling effect for selected state
+                        scaleX = if (isSelected) 1.1f else 1.0f
+                        scaleY = if (isSelected) 1.1f else 1.0f
+                        alpha = if (isSelected) 1.0f else 0.7f
+                    }
+                // No colorFilter - let the icons show in their original colors
+            )
+        } else if (item.emoji != null) {
+            Text(
+                text = item.emoji,
+                fontSize = if (isSelected) 26.sp else 22.sp,
+                color = if (isSelected) BottomNavColors.Selected else BottomNavColors.Unselected
+            )
+        }
         
         Spacer(modifier = Modifier.height(4.dp))
         
