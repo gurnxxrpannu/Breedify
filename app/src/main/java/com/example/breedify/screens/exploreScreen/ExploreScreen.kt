@@ -38,7 +38,8 @@ object ExploreColors {
 @Composable
 fun ExploreScreen(
     onNavigate: (String) -> Unit = {},
-    onBreedClick: (Breed) -> Unit = {}
+    onBreedClick: (Breed) -> Unit = {},
+    onChatbotClick: () -> Unit = {}
 ) {
     var searchText by remember { mutableStateOf("") }
     var breeds by remember { mutableStateOf<List<Breed>>(emptyList()) }
@@ -89,11 +90,22 @@ fun ExploreScreen(
         }
     }
     
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ExploreColors.Background)
-    ) {
+    Scaffold(
+        bottomBar = {
+            BreedifyBottomNavigation(
+                currentRoute = "explore",
+                onNavigate = onNavigate,
+                onChatbotClick = onChatbotClick
+            )
+        },
+        containerColor = ExploreColors.Background
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(ExploreColors.Background)
+                .padding(paddingValues)
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -173,16 +185,6 @@ fun ExploreScreen(
             }
         }
         }
-        
-        // Bottom Navigation
-        Box(
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
-            BreedifyBottomNavigation(
-                currentRoute = "explore",
-                onNavigate = onNavigate,
-                onChatbotClick = { /* Handle chatbot click if needed */ }
-            )
         }
     }
 }
