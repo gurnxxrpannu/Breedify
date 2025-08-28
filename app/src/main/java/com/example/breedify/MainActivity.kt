@@ -24,6 +24,8 @@ import com.example.breedify.screens.homeScreen.HomeScreen
 import com.example.breedify.screens.exploreScreen.ExploreScreen
 import com.example.breedify.screens.camera.CameraScreen
 import com.example.breedify.screens.prediction.MLPredictionScreen
+import com.example.breedify.screens.dogDetailScreen.DogDetailScreen
+import com.example.breedify.data.api.Breed
 import com.example.breedify.ui.theme.BreedifyTheme
 import com.example.breedify.utils.CameraUtils
 
@@ -67,6 +69,7 @@ class MainActivity : ComponentActivity() {
                 var showWelcomeScreen by remember { mutableStateOf(true) }
                 var currentScreen by remember { mutableStateOf("home") }
                 var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
+                var selectedBreed by remember { mutableStateOf<Breed?>(null) }
                 val context = LocalContext.current
                 
                 if (showWelcomeScreen) {
@@ -77,6 +80,10 @@ class MainActivity : ComponentActivity() {
                     when (currentScreen) {
                         "home" -> HomeScreen(
                             onNavigate = { route -> currentScreen = route },
+                            onBreedClick = { breed ->
+                                selectedBreed = breed
+                                currentScreen = "dog_detail"
+                            },
                             onOpenCamera = { currentScreen = "camera" },
                             onUploadPhoto = {
                                 openFilePicker { uri ->
@@ -93,8 +100,18 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                         "explore" -> ExploreScreen(
-                            onNavigate = { route -> currentScreen = route }
+                            onNavigate = { route -> currentScreen = route },
+                            onBreedClick = { breed ->
+                                selectedBreed = breed
+                                currentScreen = "dog_detail"
+                            }
                         )
+                        "dog_detail" -> selectedBreed?.let { breed ->
+                            DogDetailScreen(
+                                breed = breed,
+                                onBackClick = { currentScreen = "home" }
+                            )
+                        }
                         "camera" -> CameraScreen(
                             onImageCaptured = { uri ->
                                 capturedImageUri = uri
@@ -113,6 +130,10 @@ class MainActivity : ComponentActivity() {
                         }
                         else -> HomeScreen(
                             onNavigate = { route -> currentScreen = route },
+                            onBreedClick = { breed ->
+                                selectedBreed = breed
+                                currentScreen = "dog_detail"
+                            },
                             onOpenCamera = { currentScreen = "camera" },
                             onUploadPhoto = {
                                 openFilePicker { uri ->
