@@ -1,6 +1,5 @@
 package com.example.breedify.screens.homeScreen
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -292,7 +291,7 @@ private fun FavoriteBreedsSection(
 ) {
     Column {
         Text(
-            text = "Favorite Dog Breeds",
+            text = "Today's Most Searched Dog Breeds",
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = BreedifyColors.TextPrimary,
