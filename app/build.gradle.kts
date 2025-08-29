@@ -43,6 +43,11 @@ android {
     }
 }
 
+configurations.all {
+    exclude(group = "com.google.ai.edge.litert")
+}
+
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -76,9 +81,10 @@ dependencies {
     // ViewModel Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     
-    // TensorFlow Lite
-    implementation("org.tensorflow:tensorflow-lite:2.14.0")
+    // TensorFlow Lite - Use nightly build with FULLY_CONNECTED v12 support
+    implementation("org.tensorflow:tensorflow-lite:0.0.0-nightly-SNAPSHOT")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+    implementation("org.tensorflow:tensorflow-lite-select-tf-ops:0.0.0-nightly-SNAPSHOT")
     implementation(libs.androidx.tv.material)
     
     // Gemini AI
