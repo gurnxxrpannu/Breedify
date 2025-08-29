@@ -165,4 +165,17 @@ class DogRepository {
             Result.failure(e)
         }
     }
+    
+    suspend fun getImageDetails(imageId: String): Result<ImageDetails> {
+        return try {
+            val response = api.getImageDetails(API_KEY, imageId)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Failed to fetch image details: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
