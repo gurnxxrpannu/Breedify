@@ -16,6 +16,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // For now, let's hardcode the API key directly
+        buildConfigField("String", "GEMINI_API_KEY", "\"AIzaSyDRyORH9P0yZxxih2wIRK_I3mWptfRpuaU\"")
     }
 
     buildTypes {
@@ -36,6 +39,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -69,10 +73,16 @@ dependencies {
     // Image loading
     implementation("io.coil-kt:coil-compose:2.4.0")
     
+    // ViewModel Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    
     // TensorFlow Lite
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
     implementation(libs.androidx.tv.material)
+    
+    // Gemini AI
+    implementation("com.google.ai.client.generativeai:generativeai:0.7.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -35,6 +35,12 @@ interface DogApiService {
         @Query("limit") limit: Int = 5
     ): Response<List<BreedFact>>
     
+    @GET("v1/facts")
+    suspend fun getRandomFacts(
+        @Header("x-api-key") apiKey: String,
+        @Query("limit") limit: Int = 1
+    ): Response<List<BreedFact>>
+    
     // Favourites endpoints
     @GET("v1/favourites")
     suspend fun getFavourites(
