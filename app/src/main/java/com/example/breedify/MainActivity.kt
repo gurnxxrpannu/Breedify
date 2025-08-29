@@ -25,6 +25,7 @@ import com.example.breedify.screens.exploreScreen.ExploreScreen
 import com.example.breedify.screens.prediction.MLPredictionScreen
 import com.example.breedify.screens.dogDetailScreen.DogDetailScreen
 import com.example.breedify.screens.chatbotScreen.ChatbotScreen
+import com.example.breedify.screens.favoritesScreen.FavoritesScreen
 import com.example.breedify.data.api.Breed
 import com.example.breedify.screens.cameraScreen.DogBreedIdentificationScreen
 import com.example.breedify.ui.theme.BreedifyTheme
@@ -125,6 +126,14 @@ class MainActivity : ComponentActivity() {
                                     capturedImageUri = uri
                                     currentScreen = "prediction"
                                 }
+                            },
+                            onChatbotClick = { currentScreen = "chatbot" }
+                        )
+                        "favorites" -> FavoritesScreen(
+                            onNavigate = { route -> currentScreen = route },
+                            onBreedClick = { breed ->
+                                selectedBreed = breed
+                                currentScreen = "dog_detail"
                             },
                             onChatbotClick = { currentScreen = "chatbot" }
                         )

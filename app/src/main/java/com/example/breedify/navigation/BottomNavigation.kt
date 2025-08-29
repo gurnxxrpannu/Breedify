@@ -31,7 +31,7 @@ sealed class BottomNavItem(
     object Home : BottomNavItem("home", "Home", drawableRes = R.drawable.dog_home_icon)
     object Explore : BottomNavItem("explore", "Explore", emoji = "🦴")
     object Camera : BottomNavItem("camera", "Camera", drawableRes = R.drawable.god_camera_icon)
-    object Profile : BottomNavItem("profile", "Profile", emoji = "🐾")
+    object Favorites : BottomNavItem("favorites", "Favorites", emoji = "❤️")
 }
 
 // Colors for the new bottom navigation design
@@ -112,7 +112,7 @@ fun BreedifyBottomNavigation(
         BottomNavItem.Home,
         BottomNavItem.Explore,
         BottomNavItem.Camera,
-        BottomNavItem.Profile
+        BottomNavItem.Favorites
     )
     
     Box(

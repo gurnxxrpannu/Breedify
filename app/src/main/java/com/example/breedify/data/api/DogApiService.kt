@@ -94,6 +94,13 @@ interface DogApiService {
         @Header("x-api-key") apiKey: String,
         @Path("vote_id") voteId: Int
     ): Response<Unit>
+    
+    // Images endpoints
+    @GET("v1/images/{image_id}")
+    suspend fun getImageDetails(
+        @Header("x-api-key") apiKey: String,
+        @Path("image_id") imageId: String
+    ): Response<ImageDetails>
 }
 
 data class Breed(
@@ -170,4 +177,12 @@ data class CreateVoteRequest(
 data class CreateVoteResponse(
     val message: String,
     val id: Int
+)
+
+data class ImageDetails(
+    val id: String,
+    val url: String,
+    val width: Int,
+    val height: Int,
+    val breeds: List<Breed>
 )
