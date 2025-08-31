@@ -35,6 +35,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -55,14 +58,16 @@ enum class UploadState {
     WAITING_FOR_FILE
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun DogBreedIdentificationScreen(
     onNavigate: (String) -> Unit,
-    onTakePhoto: () -> Unit,
+    onTakePhoto: (onResult: (Boolean) -> Unit) -> Unit,
     onUploadPhoto: (onResult: (Boolean) -> Unit) -> Unit,
     onChatbotClick: () -> Unit = {}
 ) {
     var uploadState by remember { mutableStateOf(UploadState.IDLE) }
+    val cameraPermissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
 
     Scaffold(
         bottomBar = {
@@ -185,7 +190,7 @@ fun DogBreedIdentificationScreen(
                                 Spacer(modifier = Modifier.height(16.dp))
 
                                 Text(
-                                    text = "Please select an image from your gallery",
+                                    text = "Please capture or select an image",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = BreedifyColors.TextSecondary,
                                     textAlign = TextAlign.Center
@@ -211,8 +216,21 @@ fun DogBreedIdentificationScreen(
                     ) {
                         Button(
                             onClick = {
-                                uploadState = UploadState.WAITING_FOR_FILE
-                                onTakePhoto()
+                                if (cameraPermissionState.status.isGranted) {
+                                    uploadState = UploadState.WAITING_FOR_FILE
+                                    onTakePhoto { success ->
+                                        if (success) {
+                                            // Image captured, navigate to prediction
+                                            onNavigate("prediction")
+                                        } else {
+                                            // User cancelled, reset state
+                                            uploadState = UploadState.IDLE
+                                        }
+                                    }
+                                } else {
+                                    // Request camera permission
+                                    cameraPermissionState.launchPermissionRequest()
+                                }
                             },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
@@ -226,7 +244,10 @@ fun DogBreedIdentificationScreen(
                                 modifier = Modifier.size(32.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Open camera")
+                            Text(
+                                if (cameraPermissionState.status.isGranted) "Open camera" 
+                                else "Grant camera permission"
+                            )
                         }
 
                         OutlinedButton(

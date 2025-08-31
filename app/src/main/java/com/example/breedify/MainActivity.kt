@@ -9,6 +9,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.example.breedify.screens.welcomeScreen.WelcomeScreen
 import com.example.breedify.screens.homeScreen.HomeScreen
 import com.example.breedify.screens.exploreScreen.ExploreScreen
@@ -34,7 +39,18 @@ class MainActivity : ComponentActivity() {
         }
     }
     
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success: Boolean ->
+        if (success && tempCameraUri != null) {
+            handleSelectedFile(tempCameraUri!!)
+        } else {
+            onFileSelectedCallback?.invoke(null)
+        }
+    }
+    
     private var onFileSelectedCallback: ((Uri?) -> Unit)? = null
+    private var tempCameraUri: Uri? = null
     
     private fun handleSelectedFile(uri: Uri) {
         try {
@@ -54,6 +70,22 @@ class MainActivity : ComponentActivity() {
     private fun openFilePicker(onFileSelected: (Uri?) -> Unit) {
         onFileSelectedCallback = onFileSelected
         filePickerLauncher.launch("image/*")
+    }
+    
+    private fun openCamera(onFileSelected: (Uri?) -> Unit) {
+        try {
+            onFileSelectedCallback = onFileSelected
+            val imageFile = CameraUtils.createImageFile(this)
+            tempCameraUri = androidx.core.content.FileProvider.getUriForFile(
+                this,
+                "${packageName}.fileprovider",
+                imageFile
+            )
+            cameraLauncher.launch(tempCameraUri)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error opening camera: ${e.message}", Toast.LENGTH_SHORT).show()
+            onFileSelected(null)
+        }
     }
     
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -148,8 +180,11 @@ class MainActivity : ComponentActivity() {
                                     previousScreen = currentScreen
                                     currentScreen = route 
                                 },
-                                onTakePhoto = {
-                                    Toast.makeText(context, "Camera functionality coming soon!", Toast.LENGTH_SHORT).show()
+                                onTakePhoto = { onResult ->
+                                    openCamera { uri ->
+                                        capturedImageUri = uri
+                                        onResult(uri != null)
+                                    }
                                 },
                                 onUploadPhoto = { onResult ->
                                     openFilePicker { uri ->
