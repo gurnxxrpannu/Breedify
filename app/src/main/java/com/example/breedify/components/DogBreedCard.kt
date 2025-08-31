@@ -147,7 +147,11 @@ fun DogBreedCard(
                             )
                         )
                 ) {
+                    Log.d("DogBreedCard", "Rendering card for breed: ${breed.name}")
+                    Log.d("DogBreedCard", "Breed data - ID: ${breed.id}, reference_image_id: ${breed.reference_image_id}")
+                    Log.d("DogBreedCard", "Image object: ${breed.image}")
                     if (breed.image?.url != null) {
+                        Log.d("DogBreedCard", "Loading image for ${breed.name}: ${breed.image.url}")
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(breed.image.url)
@@ -155,9 +159,16 @@ fun DogBreedCard(
                                 .build(),
                             contentDescription = breed.name,
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                            contentScale = ContentScale.Crop,
+                            onError = { error ->
+                                Log.e("DogBreedCard", "Failed to load image for ${breed.name}: ${error.result.throwable}")
+                            },
+                            onSuccess = { 
+                                Log.d("DogBreedCard", "Successfully loaded image for ${breed.name}")
+                            }
                         )
                     } else {
+                        Log.w("DogBreedCard", "No image URL for breed: ${breed.name}, showing fallback emoji")
                         // Fallback dog emoji
                         Box(
                             modifier = Modifier.fillMaxSize(),

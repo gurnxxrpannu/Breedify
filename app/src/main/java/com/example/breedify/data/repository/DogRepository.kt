@@ -1,5 +1,6 @@
 package com.example.breedify.data.repository
 
+import android.util.Log
 import com.example.breedify.BuildConfig
 import com.example.breedify.data.api.*
 import retrofit2.Retrofit
@@ -21,13 +22,23 @@ class DogRepository {
     
     suspend fun getAllBreeds(): Result<List<Breed>> {
         return try {
+            Log.d("DogRepository", "Making API call to getAllBreeds with key: ${BuildConfig.DOG_API_KEY.take(10)}...")
             val response = api.getAllBreeds(BuildConfig.DOG_API_KEY)
+            Log.d("DogRepository", "API response code: ${response.code()}")
             if (response.isSuccessful) {
-                Result.success(response.body() ?: emptyList())
+                val breeds = response.body() ?: emptyList()
+                Log.d("DogRepository", "Successfully fetched ${breeds.size} breeds")
+                breeds.forEachIndexed { index, breed ->
+                    Log.d("DogRepository", "Breed $index: ${breed.name}, image URL: ${breed.image?.url ?: "NO IMAGE"}")
+                }
+                Result.success(breeds)
             } else {
+                Log.e("DogRepository", "Failed to fetch breeds: ${response.code()} - ${response.message()}")
+                Log.e("DogRepository", "Error body: ${response.errorBody()?.string()}")
                 Result.failure(Exception("Failed to fetch breeds: ${response.message()}"))
             }
         } catch (e: Exception) {
+            Log.e("DogRepository", "Exception in getAllBreeds: ${e.message}", e)
             Result.failure(e)
         }
     }
