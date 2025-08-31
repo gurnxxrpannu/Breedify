@@ -119,7 +119,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(20.dp))
             
             // Header with title and subtitle inspired by the design
-            HeaderSection()
+            HeaderSection(onDebugClick = { onNavigate("api_test") })
             
             Spacer(modifier = Modifier.height(32.dp))
             
@@ -177,7 +177,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HeaderSection() {
+private fun HeaderSection(onDebugClick: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -189,14 +189,15 @@ private fun HeaderSection() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // App grid icon (inspired by the design)
+            // App grid icon (inspired by the design) - now serves as debug button
             Box(
                 modifier = Modifier
                     .size(40.dp)
                     .background(
                         Color.White.copy(alpha = 0.3f),
                         RoundedCornerShape(12.dp)
-                    ),
+                    )
+                    .clickable { onDebugClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
