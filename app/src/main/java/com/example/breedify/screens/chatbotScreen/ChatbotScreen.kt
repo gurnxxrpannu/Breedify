@@ -27,7 +27,12 @@ import androidx.compose.runtime.collectAsState
 import com.example.breedify.screens.homeScreen.BreedifyColors
 import com.example.breedify.components.ChatbotAnimation
 import com.example.breedify.components.ChatbotAnimationFullWidth
+import com.example.breedify.utils.Constants
 import kotlinx.coroutines.launch
+
+/**
+ * Data class representing a chat message
+ */
 
 data class ChatMessage(
     val text: String,
@@ -35,6 +40,9 @@ data class ChatMessage(
     val timestamp: Long = System.currentTimeMillis()
 )
 
+/**
+ * Main chatbot screen with conversation interface
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatbotScreen(
