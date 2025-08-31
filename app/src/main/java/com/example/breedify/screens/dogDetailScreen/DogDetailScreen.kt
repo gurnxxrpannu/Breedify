@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.breedify.components.SmallLoadingAnimation
 import com.example.breedify.data.api.Breed
 import com.example.breedify.data.repository.DogRepository
 import com.example.breedify.screens.homeScreen.BreedifyColors
