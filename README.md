@@ -121,10 +121,14 @@ app/src/main/java/com/example/breedify/
 │   ├── Theme.kt                 # Material theme
 │   └── Type.kt                  # Typography
 ├── utils/                       # Utility classes
+│   ├── AppConfig.kt             # App configuration and feature flags
 │   ├── CameraUtils.kt           # Camera and image utilities
 │   ├── Constants.kt             # App constants
+│   ├── ErrorHandler.kt          # Centralized error handling
+│   ├── Logger.kt                # Logging utilities
 │   ├── MLUtils.kt               # ML model utilities
-│   └── HuggingFaceApiTest.kt    # API testing utilities
+│   ├── NetworkUtils.kt          # Network connectivity utilities
+│   └── Result.kt                # Result wrapper for API calls
 └── MainActivity.kt              # Main activity with navigation
 ```
 
@@ -234,18 +238,13 @@ The app requires the following permissions:
 
 ## 🧪 Testing
 
-### API Testing
-The app includes built-in API testing functionality:
-- **HuggingFaceApiTest**: Test ML model connectivity
-- **ApiTestScreen**: Interactive testing interface
-- **Error Handling**: Comprehensive error reporting
-
 ### Manual Testing
 1. **Camera Functionality**: Test photo capture and processing
 2. **Gallery Upload**: Test image selection and upload
 3. **Search**: Test breed search with various queries
 4. **Navigation**: Test all screen transitions
 5. **API Calls**: Verify all API integrations work correctly
+6. **Error Handling**: Test network failures and edge cases
 
 ## 🔒 Security Features
 
