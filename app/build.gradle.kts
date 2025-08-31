@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,8 +19,20 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
-        // For now, let's hardcode the API key directly
-        buildConfigField("String", "GEMINI_API_KEY", "\"AIzaSyDRyORH9P0yZxxih2wIRK_I3mWptfRpuaU\"")
+        // Load API keys from local.properties
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localProperties.load(localPropertiesFile.inputStream())
+        }
+        
+        val huggingfaceApiKey = localProperties.getProperty("HUGGINGFACE_API_KEY") ?: ""
+        val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+        val dogApiKey = localProperties.getProperty("DOG_API_KEY") ?: ""
+        
+        buildConfigField("String", "HUGGINGFACE_API_KEY", "\"$huggingfaceApiKey\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+        buildConfigField("String", "DOG_API_KEY", "\"$dogApiKey\"")
     }
 
     buildTypes {
