@@ -20,11 +20,11 @@ import java.io.IOException
 class HuggingFaceApiService(private val context: Context) {
     companion object {
         private const val TAG = "HuggingFaceApiService"
-        private val API_URL = "https://api-inference.huggingface.co/models/microsoft/resnet-50"
+        private val API_URL = "https://api-inference.huggingface.co/models/sakshammittal/Breedify"
     
     // Alternate model URLs in case the primary one fails
     private val ALTERNATE_API_URLS = listOf(
-        "https://api-inference.huggingface.co/models/skyau/dog-breed-classifier-vit",
+        "https://api-inference.huggingface.co/models/microsoft/resnet-50",
         "https://api-inference.huggingface.co/models/google/vit-base-patch16-224"
     )
     }
