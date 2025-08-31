@@ -29,6 +29,7 @@ import com.example.breedify.screens.favoritesScreen.FavoritesScreen
 import com.example.breedify.data.api.Breed
 import com.example.breedify.screens.cameraScreen.DogBreedIdentificationScreen
 import com.example.breedify.screens.test.ApiTestScreen
+import com.example.breedify.components.NavigationLoadingAnimation
 import com.example.breedify.ui.theme.BreedifyTheme
 import com.example.breedify.utils.CameraUtils
 import com.example.breedify.utils.HuggingFaceApiTest
