@@ -21,6 +21,7 @@ import com.example.breedify.R
 object LoadingAnimations {
     val DOG_PAW = R.raw.dogpawloadinganimation
     val DEFAULT = R.raw.loading_animation
+    val CHATBOT = R.raw.chatbot_animation
 }
 
 @Composable
@@ -197,6 +198,49 @@ fun NavigationLoadingAnimation(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
         }
+    }
+}
+
+@Composable
+fun ChatbotAnimation(
+    modifier: Modifier = Modifier,
+    size: Int = 120
+) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(LoadingAnimations.CHATBOT))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever
+    )
+
+    LottieAnimation(
+        composition = composition,
+        progress = { progress },
+        modifier = modifier.size(size.dp)
+    )
+}
+
+@Composable
+fun ChatbotAnimationFullWidth(
+    modifier: Modifier = Modifier,
+    height: Int = 150
+) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(LoadingAnimations.CHATBOT))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        LottieAnimation(
+            composition = composition,
+            progress = { progress },
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 
