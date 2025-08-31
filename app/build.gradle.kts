@@ -31,13 +31,32 @@ android {
         buildConfigField("String", "DOG_API_KEY", "\"${localProperties.getProperty("DOG_API_KEY") ?: ""}\"")
     }
 
+    signingConfigs {
+        create("release") {
+            // For production, these should be set via environment variables or secure keystore
+            // storeFile = file("path/to/keystore.jks")
+            // storePassword = System.getenv("KEYSTORE_PASSWORD")
+            // keyAlias = System.getenv("KEY_ALIAS")
+            // keyPassword = System.getenv("KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
-        release {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            isDebuggable = true
             isMinifyEnabled = false
+        }
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            isDebuggable = false
+            // signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
