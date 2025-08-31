@@ -47,17 +47,17 @@ fun MLPredictionScreen(
     LaunchedEffect(imageUri) {
         scope.launch {
             try {
-                statusMessage = "Loading ML model..."
+                statusMessage = "Connecting to Hugging Face API..."
                 val mlUtils = MLUtils(context)
                 
-                statusMessage = "Preprocessing image..."
+                statusMessage = "Preparing image for analysis..."
                 // Small delay to show status update
                 kotlinx.coroutines.delay(500)
                 
-                statusMessage = "Running prediction..."
+                statusMessage = "Analyzing with Breedify AI model..."
                 val result = mlUtils.predictBreed(imageUri)
                 
-                statusMessage = "Processing results..."
+                statusMessage = "Processing results from API..."
                 kotlinx.coroutines.delay(300)
                 
                 if (result != null) {
