@@ -65,26 +65,26 @@ class BottomNavCutoutShape : Shape {
             
             // Create semicircular cutout going downward into the bar
             // Left side of semicircle
-            quadraticBezierTo(
+            quadraticTo(
                 cutoutCenter - cutoutRadius, cutoutRadius * 0.6f,
                 cutoutCenter - cutoutRadius * 0.7f, cutoutRadius * 0.8f
             )
             
             // Bottom of semicircle
-            quadraticBezierTo(
+            quadraticTo(
                 cutoutCenter, cutoutRadius,
                 cutoutCenter + cutoutRadius * 0.7f, cutoutRadius * 0.8f
             )
             
             // Right side of semicircle
-            quadraticBezierTo(
+            quadraticTo(
                 cutoutCenter + cutoutRadius, cutoutRadius * 0.6f,
                 cutoutCenter + cutoutRadius, 0f
             )
             
             // Continue top edge to top-right corner
             lineTo(width - cornerRadius, 0f)
-            quadraticBezierTo(width, 0f, width, cornerRadius)
+            quadraticTo(width, 0f, width, cornerRadius)
             
             // Right edge
             lineTo(width, height)
@@ -94,7 +94,7 @@ class BottomNavCutoutShape : Shape {
             
             // Left edge
             lineTo(0f, cornerRadius)
-            quadraticBezierTo(0f, 0f, cornerRadius, 0f)
+            quadraticTo(0f, 0f, cornerRadius, 0f)
             
             close()
         }
