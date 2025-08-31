@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
 import com.example.breedify.screens.homeScreen.BreedifyColors
+import com.example.breedify.components.ChatbotAnimation
+import com.example.breedify.components.ChatbotAnimationFullWidth
 import kotlinx.coroutines.launch
 
 data class ChatMessage(
@@ -162,42 +164,91 @@ fun ChatbotScreen(
 
 @Composable
 fun WelcomeMessage() {
-    Card(
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = BreedifyColors.Primary.copy(alpha = 0.1f)
-        )
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        // Welcome card with title and animation only
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = BreedifyColors.Primary.copy(alpha = 0.1f)
+            )
         ) {
-            Text(
-                text = "🐕",
-                fontSize = 48.sp,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Welcome to Breedify Assistant!",
+                    fontSize = 23.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = BreedifyColors.TextPrimary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                
+                // Animation container that fills available width
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f) // Makes it square, filling the width
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ChatbotAnimation(
+                        modifier = Modifier.fillMaxSize(),
+                        size = 200 // Large size that will be constrained by the Box
+                    )
+                }
+            }
+        }
+        
+        // Assistant's introductory message
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            // Bot avatar
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(BreedifyColors.Primary, RoundedCornerShape(16.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "🐾",
+                    fontSize = 16.sp,
+                    color = Color.White
+                )
+            }
             
-            Text(
-                text = "Welcome to Breedify Assistant!",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = BreedifyColors.TextPrimary,
-                textAlign = TextAlign.Center
-            )
+            Spacer(modifier = Modifier.width(8.dp))
             
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = "I'm here to help you learn about dog breeds! Ask me anything about:\n\n• Breed characteristics\n• Temperament and behavior\n• Care requirements\n• Training tips\n• Health information",
-                style = MaterialTheme.typography.bodyMedium,
-                color = BreedifyColors.TextSecondary,
-                textAlign = TextAlign.Center,
-                lineHeight = 20.sp
-            )
+            Card(
+                modifier = Modifier.widthIn(max = 320.dp),
+                shape = RoundedCornerShape(
+                    topStart = 4.dp,
+                    topEnd = 16.dp,
+                    bottomStart = 16.dp,
+                    bottomEnd = 16.dp
+                ),
+                colors = CardDefaults.cardColors(
+                    containerColor = BreedifyColors.CardBackground
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Text(
+                    text = "Hi there! I'm here to help you with any dog-related queries you might have!\n\nFeel free to ask me about:\n\n• Dog breed identification and characteristics\n• Temperament and behavior patterns\n• Care, grooming, and maintenance tips\n• Training techniques and obedience\n• Health concerns and common issues\n• Nutrition and feeding guidelines\n• Exercise requirements and activities\n• Puppy care and development\n\nJust type your question below and I'll do my best to provide you with helpful information! ",
+                    modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = BreedifyColors.TextPrimary,
+                    lineHeight = 20.sp
+                )
+            }
         }
     }
 }
