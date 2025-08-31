@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.breedify.components.LoadingAnimation
 import com.example.breedify.data.api.Breed
 import com.example.breedify.data.api.BreedImage
 import com.example.breedify.data.api.Favourite
@@ -96,23 +97,10 @@ fun FavoritesScreen(
         ) {
             when {
                 isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            CircularProgressIndicator(
-                                color = BreedifyColors.Primary
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Loading your favorites...",
-                                color = BreedifyColors.TextSecondary
-                            )
-                        }
-                    }
+                    LoadingAnimation(
+                        message = "Loading your favorites...",
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
                 
                 errorMessage != null -> {
