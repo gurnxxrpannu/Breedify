@@ -115,7 +115,13 @@ class MainActivity : ComponentActivity() {
                         "dog_detail" -> selectedBreed?.let { breed ->
                             DogDetailScreen(
                                 breed = breed,
-                                onBackClick = { currentScreen = "home" }
+                                onBackClick = { 
+                                    // Go back to the previous screen (could be home, explore, favorites, or prediction)
+                                    currentScreen = when {
+                                        capturedImageUri != null -> "prediction" // If we came from ML prediction
+                                        else -> "home" // Default to home
+                                    }
+                                }
                             )
                         }
                         "camera" -> DogBreedIdentificationScreen(
@@ -149,6 +155,12 @@ class MainActivity : ComponentActivity() {
                                 onBackPressed = { currentScreen = "home" },
                                 onPredictionComplete = { result ->
                                     Toast.makeText(context, "Breed identified: ${result.breedName}", Toast.LENGTH_LONG).show()
+                                },
+                                onBreedFound = { breed ->
+                                    println("🐕 DEBUG: MainActivity received breed: '${breed.name}' (ID: ${breed.id})")
+                                    selectedBreed = breed
+                                    currentScreen = "dog_detail"
+                                    println("🐕 DEBUG: Navigation set to dog_detail")
                                 }
                             )
                         }

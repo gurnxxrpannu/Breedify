@@ -23,6 +23,8 @@ import coil.compose.AsyncImage
 import com.example.breedify.components.PredictionLoadingAnimation
 import com.example.breedify.screens.homeScreen.BreedifyColors
 import com.example.breedify.utils.MLUtils
+import com.example.breedify.data.repository.DogRepository
+import com.example.breedify.data.api.Breed
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlin.random.Random
@@ -32,11 +34,24 @@ data class PredictionResult(
     val confidence: Float
 )
 
+// Helper function to normalize breed names for better matching
+private fun normalizeBreedName(breedName: String): String {
+    return breedName
+        .lowercase()
+        .replace("_", " ")
+        .replace("-", " ")
+        .split(" ")
+        .joinToString(" ") { word ->
+            word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+        }
+}
+
 @Composable
 fun MLPredictionScreen(
     imageUri: Uri,
     onBackPressed: () -> Unit,
-    onPredictionComplete: (PredictionResult) -> Unit
+    onPredictionComplete: (PredictionResult) -> Unit,
+    onBreedFound: (Breed) -> Unit
 ) {
     var isLoading by remember { mutableStateOf(true) }
     var statusMessage by remember { mutableStateOf("Initializing...") }
@@ -46,6 +61,7 @@ fun MLPredictionScreen(
     
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val repository = remember { DogRepository() }
     
     // Start prediction when screen loads
     LaunchedEffect(imageUri) {
@@ -121,6 +137,75 @@ fun MLPredictionScreen(
                 predictionResult = apiResult
                 onPredictionComplete(apiResult!!)
                 isLoading = false
+                
+                // Search for breed in background (no UI loading)
+                println("🐕 DEBUG: Starting background breed search...")
+                
+                // First, let's test if we can get all breeds to see what's available
+                println("🐕 DEBUG: Testing Dog API connection...")
+                repository.getAllBreeds().fold(
+                    onSuccess = { allBreeds ->
+                        println("🐕 DEBUG: Dog API working! Found ${allBreeds.size} total breeds")
+                        // Show first few breed names for reference
+                        allBreeds.take(5).forEach { breed ->
+                            println("🐕 DEBUG: Sample breed: '${breed.name}'")
+                        }
+                    },
+                    onFailure = { error ->
+                        println("🐕 DEBUG: Dog API connection failed: ${error.message}")
+                    }
+                )
+                
+                try {
+                    val normalizedBreedName = normalizeBreedName(apiResult!!.breedName)
+                    println("🐕 DEBUG: Original breed name: '${apiResult!!.breedName}'")
+                    println("🐕 DEBUG: Normalized breed name: '$normalizedBreedName'")
+                    
+                    repository.searchBreeds(normalizedBreedName).fold(
+                        onSuccess = { breeds ->
+                            println("🐕 DEBUG: Search results for '$normalizedBreedName': ${breeds.size} breeds found")
+                            breeds.forEach { breed ->
+                                println("🐕 DEBUG: Found breed: '${breed.name}' (ID: ${breed.id})")
+                            }
+                            
+                            if (breeds.isNotEmpty()) {
+                                // Found matching breed, navigate to detail screen
+                                val matchedBreed = breeds.first()
+                                println("🐕 DEBUG: Navigating to breed detail for: '${matchedBreed.name}'")
+                                delay(500L) // Small delay for smooth transition
+                                onBreedFound(matchedBreed)
+                            } else {
+                                println("🐕 DEBUG: No breeds found for normalized name, trying original name...")
+                                // Try searching with original name if normalized didn't work
+                                repository.searchBreeds(apiResult!!.breedName).fold(
+                                    onSuccess = { fallbackBreeds ->
+                                        println("🐕 DEBUG: Fallback search results for '${apiResult!!.breedName}': ${fallbackBreeds.size} breeds found")
+                                        if (fallbackBreeds.isNotEmpty()) {
+                                            val matchedBreed = fallbackBreeds.first()
+                                            println("🐕 DEBUG: Navigating to breed detail for: '${matchedBreed.name}' (fallback)")
+                                            delay(500L)
+                                            onBreedFound(matchedBreed)
+                                        } else {
+                                            println("🐕 DEBUG: No match found in fallback search, staying on current screen")
+                                            // No match found, show prediction result
+                                        }
+                                    },
+                                    onFailure = { error ->
+                                        println("🐕 DEBUG: Fallback search failed: ${error.message}")
+                                        // Show prediction result on error
+                                    }
+                                )
+                            }
+                        },
+                        onFailure = { error ->
+                            println("🐕 DEBUG: Primary search failed: ${error.message}")
+                            // Show prediction result on error
+                        }
+                    )
+                } catch (e: Exception) {
+                    println("🐕 DEBUG: Exception during breed search: ${e.message}")
+                    // Show prediction result on error
+                }
                 
             } catch (e: Exception) {
                 errorMessage = "Error: ${e.message}"
@@ -207,40 +292,19 @@ fun MLPredictionScreen(
             ) {
                 when {
                     isLoading -> {
-                        // Loading state with progress counter and dog paw animation
+                        // Loading state with progress bar and status text
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             PredictionLoadingAnimation(
                                 statusMessage = "Analyzing breed...",
-                                subMessage = "AI model is processing your image",
+                                subMessage = "",
                                 modifier = Modifier.fillMaxWidth()
                             )
                             
                             if (predictionProgress > 0) {
                                 Spacer(modifier = Modifier.height(24.dp))
-                                
-                                // Progress counter
-                                Text(
-                                    text = "$predictionProgress%",
-                                    style = MaterialTheme.typography.headlineLarge.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 48.sp
-                                    ),
-                                    color = BreedifyColors.Primary
-                                )
-                                
-                                Spacer(modifier = Modifier.height(8.dp))
-                                
-                                Text(
-                                    text = statusMessage,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = BreedifyColors.TextSecondary,
-                                    textAlign = TextAlign.Center
-                                )
-                                
-                                Spacer(modifier = Modifier.height(16.dp))
                                 
                                 // Progress bar
                                 LinearProgressIndicator(
@@ -248,8 +312,17 @@ fun MLPredictionScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(6.dp),
-                                    color = BreedifyColors.Primary,
-                                    trackColor = BreedifyColors.Primary.copy(alpha = 0.2f)
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                                )
+                                
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                Text(
+                                    text = statusMessage,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = BreedifyColors.TextSecondary,
+                                    textAlign = TextAlign.Center
                                 )
                             } else {
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -365,7 +438,44 @@ fun MLPredictionScreen(
                             }
                             
                             Button(
-                                onClick = { /* TODO: Navigate to breed details */ },
+                                onClick = {
+                                    println("🐕 DEBUG: Learn More button clicked")
+                                    // Search for breed and navigate to details
+                                    scope.launch {
+                                        predictionResult?.let { result ->
+                                            println("🐕 DEBUG: Manual search for breed: '${result.breedName}'")
+                                            val normalizedName = normalizeBreedName(result.breedName)
+                                            println("🐕 DEBUG: Manual normalized name: '$normalizedName'")
+                                            
+                                            repository.searchBreeds(normalizedName).fold(
+                                                onSuccess = { breeds ->
+                                                    println("🐕 DEBUG: Manual search found ${breeds.size} breeds")
+                                                    if (breeds.isNotEmpty()) {
+                                                        println("🐕 DEBUG: Manual navigation to: '${breeds.first().name}'")
+                                                        onBreedFound(breeds.first())
+                                                    } else {
+                                                        // Try with original name
+                                                        repository.searchBreeds(result.breedName).fold(
+                                                            onSuccess = { fallbackBreeds ->
+                                                                println("🐕 DEBUG: Manual fallback found ${fallbackBreeds.size} breeds")
+                                                                if (fallbackBreeds.isNotEmpty()) {
+                                                                    println("🐕 DEBUG: Manual fallback navigation to: '${fallbackBreeds.first().name}'")
+                                                                    onBreedFound(fallbackBreeds.first())
+                                                                }
+                                                            },
+                                                            onFailure = { error ->
+                                                                println("🐕 DEBUG: Manual fallback failed: ${error.message}")
+                                                            }
+                                                        )
+                                                    }
+                                                },
+                                                onFailure = { error ->
+                                                    println("🐕 DEBUG: Manual search failed: ${error.message}")
+                                                }
+                                            )
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = BreedifyColors.Secondary
