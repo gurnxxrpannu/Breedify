@@ -341,5 +341,4 @@ If you encounter any issues or have questions:
 *Breedify - Discover, identify, and learn about your perfect canine companion*
 
 **Download**: Coming soon to Google Play Store
-**Website**: [Coming Soon]
-**Contact**: [Your Contact Information]
+**Contact**:gurnxxrpannu@gmail.com

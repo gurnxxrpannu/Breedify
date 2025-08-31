@@ -102,7 +102,8 @@ class MainActivity : ComponentActivity() {
                                         Toast.makeText(context, "Failed to process image", Toast.LENGTH_SHORT).show()
                                     }
                                 }
-                            }
+                            },
+                            onChatbotClick = { currentScreen = "chatbot" }
                         )
                         "explore" -> ExploreScreen(
                             onNavigate = { route -> currentScreen = route },
@@ -182,7 +183,8 @@ class MainActivity : ComponentActivity() {
                                     capturedImageUri = uri
                                     currentScreen = "prediction"
                                 }
-                            }
+                            },
+                            onChatbotClick = { currentScreen = "chatbot" }
                         )
                     }
                 }
