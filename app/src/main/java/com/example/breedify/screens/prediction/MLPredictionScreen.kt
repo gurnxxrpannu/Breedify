@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -189,7 +189,7 @@ fun MLPredictionScreen(
                     )
             ) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = BreedifyColors.TextPrimary
                 )
@@ -263,7 +263,7 @@ fun MLPredictionScreen(
                                 
                                 // Progress bar
                                 LinearProgressIndicator(
-                                    progress = predictionProgress / 100f,
+                                    progress = { predictionProgress / 100f },
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(6.dp),
@@ -394,32 +394,22 @@ fun MLPredictionScreen(
                             
                             Button(
                                 onClick = {
-                                    println("🐕 DEBUG: Learn More button clicked")
                                     // Search for breed and navigate to details using improved matching
                                     scope.launch {
                                         predictionResult?.let { result ->
-                                            println("🐕 DEBUG: Manual search for breed: '${result.breedName}'")
                                             val breedVariations = extractBreedVariations(result.breedName)
-                                            println("🐕 DEBUG: Manual breed variations to try: $breedVariations")
-                                            
                                             var foundBreed: Breed? = null
                                             
                                             // Try each variation until we find a match
                                             for (variation in breedVariations) {
-                                                println("🐕 DEBUG: Manual trying search for: '$variation'")
-                                                
                                                 repository.searchBreeds(variation).fold(
                                                     onSuccess = { breeds ->
-                                                        println("🐕 DEBUG: Manual search results for '$variation': ${breeds.size} breeds found")
                                                         if (breeds.isNotEmpty()) {
                                                             foundBreed = breeds.first()
-                                                            println("🐕 DEBUG: Manual match found! Using breed: '${foundBreed!!.name}'")
                                                             return@fold // Exit the fold early
                                                         }
                                                     },
-                                                    onFailure = { error ->
-                                                        println("🐕 DEBUG: Manual search failed for '$variation': ${error.message}")
-                                                    }
+                                                    onFailure = { /* Handle error silently */ }
                                                 )
                                                 
                                                 // If we found a breed, break out of the loop
@@ -427,12 +417,7 @@ fun MLPredictionScreen(
                                             }
                                             
                                             // Navigate to breed detail if we found a match
-                                            if (foundBreed != null) {
-                                                println("🐕 DEBUG: Manual navigation to: '${foundBreed!!.name}'")
-                                                onBreedFound(foundBreed!!)
-                                            } else {
-                                                println("🐕 DEBUG: Manual search - no match found for any variation")
-                                            }
+                                            foundBreed?.let { onBreedFound(it) }
                                         }
                                     }
                                 },
