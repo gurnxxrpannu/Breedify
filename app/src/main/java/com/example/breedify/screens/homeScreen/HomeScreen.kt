@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.breedify.R
+import com.example.breedify.components.SmallLoadingAnimation
 import com.example.breedify.data.api.Breed
 import com.example.breedify.data.api.BreedFact
 import com.example.breedify.data.repository.DogRepository
@@ -512,8 +513,8 @@ private fun DogFactsSection() {
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(
-                            color = BreedifyColors.Primary,
+                        SmallLoadingAnimation(
+                            size = 24,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -543,8 +544,8 @@ private fun DogFactsSection() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     if (isRefreshing) {
-                        CircularProgressIndicator(
-                            color = Color.White,
+                        SmallLoadingAnimation(
+                            size = 16,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -690,8 +691,8 @@ private fun BreedSpecificFactsSection(breeds: List<Breed>) {
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     if (isLoading) {
-                        CircularProgressIndicator(
-                            color = BreedifyColors.Primary,
+                        SmallLoadingAnimation(
+                            size = 24,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
