@@ -40,10 +40,34 @@ private fun normalizeBreedName(breedName: String): String {
         .lowercase()
         .replace("_", " ")
         .replace("-", " ")
+        .replace(",", " ") // Handle comma-separated values like "pug,pug dog"
         .split(" ")
+        .filter { it.isNotBlank() && it != "dog" } // Remove "dog" suffix and empty strings
+        .distinct() // Remove duplicates like "pug,pug dog" → ["pug"]
         .joinToString(" ") { word ->
             word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
         }
+}
+
+// Helper function to extract possible breed names from ML result
+private fun extractBreedVariations(breedName: String): List<String> {
+    val normalized = normalizeBreedName(breedName)
+    val variations = mutableListOf<String>()
+    
+    // Add the normalized version
+    variations.add(normalized)
+    
+    // Add individual words (for cases like "Golden Retriever" → ["Golden", "Retriever"])
+    normalized.split(" ").forEach { word ->
+        if (word.length > 2) { // Only add meaningful words
+            variations.add(word)
+        }
+    }
+    
+    // Add original name
+    variations.add(breedName)
+    
+    return variations.distinct()
 }
 
 @Composable
@@ -137,75 +161,6 @@ fun MLPredictionScreen(
                 predictionResult = apiResult
                 onPredictionComplete(apiResult!!)
                 isLoading = false
-                
-                // Search for breed in background (no UI loading)
-                println("🐕 DEBUG: Starting background breed search...")
-                
-                // First, let's test if we can get all breeds to see what's available
-                println("🐕 DEBUG: Testing Dog API connection...")
-                repository.getAllBreeds().fold(
-                    onSuccess = { allBreeds ->
-                        println("🐕 DEBUG: Dog API working! Found ${allBreeds.size} total breeds")
-                        // Show first few breed names for reference
-                        allBreeds.take(5).forEach { breed ->
-                            println("🐕 DEBUG: Sample breed: '${breed.name}'")
-                        }
-                    },
-                    onFailure = { error ->
-                        println("🐕 DEBUG: Dog API connection failed: ${error.message}")
-                    }
-                )
-                
-                try {
-                    val normalizedBreedName = normalizeBreedName(apiResult!!.breedName)
-                    println("🐕 DEBUG: Original breed name: '${apiResult!!.breedName}'")
-                    println("🐕 DEBUG: Normalized breed name: '$normalizedBreedName'")
-                    
-                    repository.searchBreeds(normalizedBreedName).fold(
-                        onSuccess = { breeds ->
-                            println("🐕 DEBUG: Search results for '$normalizedBreedName': ${breeds.size} breeds found")
-                            breeds.forEach { breed ->
-                                println("🐕 DEBUG: Found breed: '${breed.name}' (ID: ${breed.id})")
-                            }
-                            
-                            if (breeds.isNotEmpty()) {
-                                // Found matching breed, navigate to detail screen
-                                val matchedBreed = breeds.first()
-                                println("🐕 DEBUG: Navigating to breed detail for: '${matchedBreed.name}'")
-                                delay(500L) // Small delay for smooth transition
-                                onBreedFound(matchedBreed)
-                            } else {
-                                println("🐕 DEBUG: No breeds found for normalized name, trying original name...")
-                                // Try searching with original name if normalized didn't work
-                                repository.searchBreeds(apiResult!!.breedName).fold(
-                                    onSuccess = { fallbackBreeds ->
-                                        println("🐕 DEBUG: Fallback search results for '${apiResult!!.breedName}': ${fallbackBreeds.size} breeds found")
-                                        if (fallbackBreeds.isNotEmpty()) {
-                                            val matchedBreed = fallbackBreeds.first()
-                                            println("🐕 DEBUG: Navigating to breed detail for: '${matchedBreed.name}' (fallback)")
-                                            delay(500L)
-                                            onBreedFound(matchedBreed)
-                                        } else {
-                                            println("🐕 DEBUG: No match found in fallback search, staying on current screen")
-                                            // No match found, show prediction result
-                                        }
-                                    },
-                                    onFailure = { error ->
-                                        println("🐕 DEBUG: Fallback search failed: ${error.message}")
-                                        // Show prediction result on error
-                                    }
-                                )
-                            }
-                        },
-                        onFailure = { error ->
-                            println("🐕 DEBUG: Primary search failed: ${error.message}")
-                            // Show prediction result on error
-                        }
-                    )
-                } catch (e: Exception) {
-                    println("🐕 DEBUG: Exception during breed search: ${e.message}")
-                    // Show prediction result on error
-                }
                 
             } catch (e: Exception) {
                 errorMessage = "Error: ${e.message}"
@@ -440,39 +395,44 @@ fun MLPredictionScreen(
                             Button(
                                 onClick = {
                                     println("🐕 DEBUG: Learn More button clicked")
-                                    // Search for breed and navigate to details
+                                    // Search for breed and navigate to details using improved matching
                                     scope.launch {
                                         predictionResult?.let { result ->
                                             println("🐕 DEBUG: Manual search for breed: '${result.breedName}'")
-                                            val normalizedName = normalizeBreedName(result.breedName)
-                                            println("🐕 DEBUG: Manual normalized name: '$normalizedName'")
+                                            val breedVariations = extractBreedVariations(result.breedName)
+                                            println("🐕 DEBUG: Manual breed variations to try: $breedVariations")
                                             
-                                            repository.searchBreeds(normalizedName).fold(
-                                                onSuccess = { breeds ->
-                                                    println("🐕 DEBUG: Manual search found ${breeds.size} breeds")
-                                                    if (breeds.isNotEmpty()) {
-                                                        println("🐕 DEBUG: Manual navigation to: '${breeds.first().name}'")
-                                                        onBreedFound(breeds.first())
-                                                    } else {
-                                                        // Try with original name
-                                                        repository.searchBreeds(result.breedName).fold(
-                                                            onSuccess = { fallbackBreeds ->
-                                                                println("🐕 DEBUG: Manual fallback found ${fallbackBreeds.size} breeds")
-                                                                if (fallbackBreeds.isNotEmpty()) {
-                                                                    println("🐕 DEBUG: Manual fallback navigation to: '${fallbackBreeds.first().name}'")
-                                                                    onBreedFound(fallbackBreeds.first())
-                                                                }
-                                                            },
-                                                            onFailure = { error ->
-                                                                println("🐕 DEBUG: Manual fallback failed: ${error.message}")
-                                                            }
-                                                        )
+                                            var foundBreed: Breed? = null
+                                            
+                                            // Try each variation until we find a match
+                                            for (variation in breedVariations) {
+                                                println("🐕 DEBUG: Manual trying search for: '$variation'")
+                                                
+                                                repository.searchBreeds(variation).fold(
+                                                    onSuccess = { breeds ->
+                                                        println("🐕 DEBUG: Manual search results for '$variation': ${breeds.size} breeds found")
+                                                        if (breeds.isNotEmpty()) {
+                                                            foundBreed = breeds.first()
+                                                            println("🐕 DEBUG: Manual match found! Using breed: '${foundBreed!!.name}'")
+                                                            return@fold // Exit the fold early
+                                                        }
+                                                    },
+                                                    onFailure = { error ->
+                                                        println("🐕 DEBUG: Manual search failed for '$variation': ${error.message}")
                                                     }
-                                                },
-                                                onFailure = { error ->
-                                                    println("🐕 DEBUG: Manual search failed: ${error.message}")
-                                                }
-                                            )
+                                                )
+                                                
+                                                // If we found a breed, break out of the loop
+                                                if (foundBreed != null) break
+                                            }
+                                            
+                                            // Navigate to breed detail if we found a match
+                                            if (foundBreed != null) {
+                                                println("🐕 DEBUG: Manual navigation to: '${foundBreed!!.name}'")
+                                                onBreedFound(foundBreed!!)
+                                            } else {
+                                                println("🐕 DEBUG: Manual search - no match found for any variation")
+                                            }
                                         }
                                     }
                                 },
