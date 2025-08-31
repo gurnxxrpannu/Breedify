@@ -111,10 +111,9 @@ fun ChatbotScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                if (messages.isEmpty()) {
-                    item {
-                        WelcomeMessage()
-                    }
+                // Always show welcome message
+                item {
+                    WelcomeMessage()
                 }
                 
                 items(messages) { message ->
