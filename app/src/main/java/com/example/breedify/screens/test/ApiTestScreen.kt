@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.breedify.components.SmallLoadingAnimation
 import com.example.breedify.utils.HuggingFaceApiTest
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
@@ -66,7 +67,10 @@ fun ApiTestScreen(
         }
         
         if (isLoading) {
-            CircularProgressIndicator()
+            SmallLoadingAnimation(
+                size = 40,
+                modifier = Modifier.size(40.dp)
+            )
         }
         
         if (testStatus.isNotEmpty()) {
