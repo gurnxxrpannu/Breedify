@@ -332,13 +332,6 @@ fun MLPredictionScreen(
                     predictionResult != null -> {
                         // Success state
                         Text(
-                            text = "🐕",
-                            fontSize = 48.sp
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        Text(
                             text = "Breed Identified!",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
