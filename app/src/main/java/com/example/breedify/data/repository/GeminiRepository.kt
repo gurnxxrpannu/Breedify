@@ -19,7 +19,7 @@ class GeminiRepository(
     }
 
     suspend fun generateResponse(message: String): String {
-        return getBreedInformation(message).getOrElse { 
+        return geminiApiService.generateChatResponse(message).getOrElse { 
             "I'm sorry, I couldn't process your request. Please try asking about a specific dog breed or dog-related topic."
         }
     }

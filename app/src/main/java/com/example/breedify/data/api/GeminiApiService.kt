@@ -88,4 +88,25 @@ class GeminiApiService {
             }
         }
     }
+
+    suspend fun generateChatResponse(message: String): Result<String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val prompt = """
+                    You are Breedify Assistant, a helpful AI assistant specialized in dogs and dog breeds. 
+                    Please respond to the following message in a friendly and informative way.
+                    Focus on providing helpful information about dogs, dog breeds, care, training, health, or any dog-related topics.
+                    
+                    User message: $message
+                    
+                    Please provide a helpful response. If the question is not dog-related, politely redirect the conversation back to dog topics.
+                """.trimIndent()
+
+                val response = generativeModel.generateContent(prompt)
+                Result.success(response.text ?: "I'm sorry, I couldn't generate a response.")
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+    }
 }
