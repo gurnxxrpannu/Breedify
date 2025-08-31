@@ -11,9 +11,9 @@ object AppConfig {
     const val APP_VERSION = BuildConfig.VERSION_NAME
     
     // Feature Flags
-    const val ENABLE_LOGGING = BuildConfig.DEBUG
-    const val ENABLE_ANALYTICS = !BuildConfig.DEBUG
-    const val ENABLE_CRASH_REPORTING = !BuildConfig.DEBUG
+    val ENABLE_LOGGING = BuildConfig.DEBUG
+    val ENABLE_ANALYTICS = !BuildConfig.DEBUG
+    val ENABLE_CRASH_REPORTING = !BuildConfig.DEBUG
     
     // API Configuration
     const val API_TIMEOUT_SECONDS = 30L
@@ -29,6 +29,12 @@ object AppConfig {
     const val IMAGE_CACHE_SIZE_MB = 50
     const val MAX_CACHED_IMAGES = 100
     
+    // Security & Performance
+    val ENABLE_CERTIFICATE_PINNING = !BuildConfig.DEBUG
+    val ENABLE_ROOT_DETECTION = !BuildConfig.DEBUG
+    val ENABLE_STRICT_MODE = BuildConfig.DEBUG
+    val MEMORY_LEAK_DETECTION = BuildConfig.DEBUG
+    
     // Validation
     fun isApiKeyConfigured(): Boolean {
         return BuildConfig.GEMINI_API_KEY.isNotEmpty() && 
@@ -38,5 +44,9 @@ object AppConfig {
     fun isHuggingFaceConfigured(): Boolean {
         return BuildConfig.HUGGINGFACE_API_KEY.isNotEmpty() && 
                BuildConfig.HUGGINGFACE_API_KEY.startsWith("hf_")
+    }
+    
+    fun isDogApiConfigured(): Boolean {
+        return BuildConfig.DOG_API_KEY.isNotEmpty()
     }
 }
