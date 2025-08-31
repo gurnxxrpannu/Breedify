@@ -26,12 +26,15 @@ class MainActivity : ComponentActivity() {
     private val filePickerLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { selectedUri ->
-            handleSelectedFile(selectedUri)
+        if (uri != null) {
+            handleSelectedFile(uri)
+        } else {
+            // User cancelled the picker
+            onFileSelectedCallback?.invoke(null)
         }
     }
     
-    private var onFileSelectedCallback: ((Uri) -> Unit)? = null
+    private var onFileSelectedCallback: ((Uri?) -> Unit)? = null
     
     private fun handleSelectedFile(uri: Uri) {
         try {
@@ -48,7 +51,7 @@ class MainActivity : ComponentActivity() {
         }
     }
     
-    private fun openFilePicker(onFileSelected: (Uri) -> Unit) {
+    private fun openFilePicker(onFileSelected: (Uri?) -> Unit) {
         onFileSelectedCallback = onFileSelected
         filePickerLauncher.launch("image/*")
     }
@@ -62,6 +65,7 @@ class MainActivity : ComponentActivity() {
                 var currentScreen by remember { mutableStateOf("home") }
                 var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
                 var selectedBreed by remember { mutableStateOf<Breed?>(null) }
+                var previousScreen by remember { mutableStateOf("home") }
                 val context = LocalContext.current
                 
                 if (showWelcomeScreen) {
@@ -71,99 +75,152 @@ class MainActivity : ComponentActivity() {
                 } else {
                     when (currentScreen) {
                         "home" -> HomeScreen(
-                            onNavigate = { route -> currentScreen = route },
+                            onNavigate = { route -> 
+                                previousScreen = currentScreen
+                                currentScreen = route 
+                            },
                             onBreedClick = { breed ->
                                 selectedBreed = breed
+                                previousScreen = currentScreen
                                 currentScreen = "dog_detail"
                             },
-                            onOpenCamera = { currentScreen = "camera" },
+                            onOpenCamera = { 
+                                previousScreen = currentScreen
+                                currentScreen = "camera" 
+                            },
                             onUploadPhoto = {
                                 openFilePicker { uri ->
-                                    capturedImageUri = uri
-                                    // Process image for ML classification
-                                    val processedBitmap = CameraUtils.processImageForML(uri, context)
-                                    if (processedBitmap != null) {
-                                        Toast.makeText(context, "Image uploaded and processed for ML classification!", Toast.LENGTH_LONG).show()
-                                        currentScreen = "prediction"
-                                    } else {
-                                        Toast.makeText(context, "Failed to process image", Toast.LENGTH_SHORT).show()
+                                    if (uri != null) {
+                                        capturedImageUri = uri
+                                        // Process image for ML classification
+                                        val processedBitmap = CameraUtils.processImageForML(uri, context)
+                                        if (processedBitmap != null) {
+                                            Toast.makeText(context, "Image uploaded and processed for ML classification!", Toast.LENGTH_LONG).show()
+                                            previousScreen = currentScreen
+                                            currentScreen = "prediction"
+                                        } else {
+                                            Toast.makeText(context, "Failed to process image", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
+                                    // If uri is null, user cancelled - do nothing
                                 }
                             },
-                            onChatbotClick = { currentScreen = "chatbot" }
+                            onChatbotClick = { 
+                                previousScreen = currentScreen
+                                currentScreen = "chatbot" 
+                            }
                         )
                         "explore" -> ExploreScreen(
-                            onNavigate = { route -> currentScreen = route },
+                            onNavigate = { route -> 
+                                previousScreen = currentScreen
+                                currentScreen = route 
+                            },
                             onBreedClick = { breed ->
                                 selectedBreed = breed
+                                previousScreen = currentScreen
                                 currentScreen = "dog_detail"
                             },
-                            onChatbotClick = { currentScreen = "chatbot" }
+                            onChatbotClick = { 
+                                previousScreen = currentScreen
+                                currentScreen = "chatbot" 
+                            }
                         )
                         "dog_detail" -> selectedBreed?.let { breed ->
                             DogDetailScreen(
                                 breed = breed,
                                 onBackClick = { 
-                                    // Go back to the previous screen (could be home, explore, favorites, or prediction)
-                                    currentScreen = when {
-                                        capturedImageUri != null -> "prediction" // If we came from ML prediction
-                                        else -> "home" // Default to home
-                                    }
+                                    // Go back to the previous screen
+                                    currentScreen = previousScreen
                                 }
                             )
                         }
-                        "camera" -> DogBreedIdentificationScreen(
-                            onNavigate = { route -> currentScreen = route },
-                            onTakePhoto = {
-                                Toast.makeText(context, "Camera functionality coming soon!", Toast.LENGTH_SHORT).show()
-                            },
-                            onUploadPhoto = {
-                                openFilePicker { uri ->
-                                    capturedImageUri = uri
-                                    currentScreen = "prediction"
+                        "camera" -> {
+                            // Reset image when entering camera screen from a different screen
+                            LaunchedEffect(currentScreen) {
+                                if (previousScreen != "camera") {
+                                    capturedImageUri = null
                                 }
-                            },
-                            onChatbotClick = { currentScreen = "chatbot" }
-                        )
+                                previousScreen = currentScreen
+                            }
+                            
+                            DogBreedIdentificationScreen(
+                                onNavigate = { route -> 
+                                    previousScreen = currentScreen
+                                    currentScreen = route 
+                                },
+                                onTakePhoto = {
+                                    Toast.makeText(context, "Camera functionality coming soon!", Toast.LENGTH_SHORT).show()
+                                },
+                                onUploadPhoto = { onResult ->
+                                    openFilePicker { uri ->
+                                        capturedImageUri = uri
+                                        onResult(uri != null)
+                                    }
+                                },
+                                onChatbotClick = { 
+                                    previousScreen = currentScreen
+                                    currentScreen = "chatbot" 
+                                }
+                            )
+                        }
                         "favorites" -> FavoritesScreen(
-                            onNavigate = { route -> currentScreen = route },
+                            onNavigate = { route -> 
+                                previousScreen = currentScreen
+                                currentScreen = route 
+                            },
                             onBreedClick = { breed ->
                                 selectedBreed = breed
+                                previousScreen = currentScreen
                                 currentScreen = "dog_detail"
                             },
-                            onChatbotClick = { currentScreen = "chatbot" }
+                            onChatbotClick = { 
+                                previousScreen = currentScreen
+                                currentScreen = "chatbot" 
+                            }
                         )
                         "chatbot" -> ChatbotScreen(
-                            onNavigateBack = { currentScreen = "home" }
+                            onNavigateBack = { currentScreen = previousScreen }
                         )
                         "prediction" -> capturedImageUri?.let { uri ->
                             MLPredictionScreen(
                                 imageUri = uri,
-                                onBackPressed = { currentScreen = "home" },
+                                onBackPressed = { currentScreen = previousScreen },
                                 onPredictionComplete = { result ->
                                     Toast.makeText(context, "Breed identified: ${result.breedName}", Toast.LENGTH_LONG).show()
                                 },
                                 onBreedFound = { breed ->
                                     selectedBreed = breed
+                                    previousScreen = currentScreen
                                     currentScreen = "dog_detail"
                                 }
                             )
                         }
 
                         else -> HomeScreen(
-                            onNavigate = { route -> currentScreen = route },
+                            onNavigate = { route -> 
+                                previousScreen = currentScreen
+                                currentScreen = route 
+                            },
                             onBreedClick = { breed ->
                                 selectedBreed = breed
+                                previousScreen = currentScreen
                                 currentScreen = "dog_detail"
                             },
-                            onOpenCamera = { currentScreen = "camera" },
+                            onOpenCamera = { 
+                                previousScreen = currentScreen
+                                currentScreen = "camera" 
+                            },
                             onUploadPhoto = {
                                 openFilePicker { uri ->
                                     capturedImageUri = uri
+                                    previousScreen = currentScreen
                                     currentScreen = "prediction"
                                 }
                             },
-                            onChatbotClick = { currentScreen = "chatbot" }
+                            onChatbotClick = { 
+                                previousScreen = currentScreen
+                                currentScreen = "chatbot" 
+                            }
                         )
                     }
                 }

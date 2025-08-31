@@ -34,7 +34,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
-import kotlin.random.Random
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -53,37 +52,17 @@ import com.example.breedify.screens.homeScreen.BreedifyColors
 // Upload states
 enum class UploadState {
     IDLE,
-    WAITING_FOR_FILE,
-    UPLOADED,
-    ERROR
+    WAITING_FOR_FILE
 }
 
 @Composable
 fun DogBreedIdentificationScreen(
     onNavigate: (String) -> Unit,
     onTakePhoto: () -> Unit,
-    onUploadPhoto: () -> Unit,
+    onUploadPhoto: (onResult: (Boolean) -> Unit) -> Unit,
     onChatbotClick: () -> Unit = {}
 ) {
     var uploadState by remember { mutableStateOf(UploadState.IDLE) }
-    var uploadedFileName by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
-
-    // Simulate file selection process
-    LaunchedEffect(uploadState) {
-        if (uploadState == UploadState.WAITING_FOR_FILE) {
-            // Simulate waiting for file selection (2-4 seconds)
-            delay(2000L + Random.nextLong(2000L))
-
-            // Simulate success/failure (90% success rate)
-            if (Random.nextFloat() < 0.9f) {
-                uploadState = UploadState.UPLOADED
-            } else {
-                uploadState = UploadState.ERROR
-                errorMessage = "No image selected or upload cancelled"
-            }
-        }
-    }
 
     Scaffold(
         bottomBar = {
@@ -214,136 +193,9 @@ fun DogBreedIdentificationScreen(
                             }
                         }
 
-                        UploadState.UPLOADED -> {
-                            // Upload successful - ready to predict
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(24.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(64.dp)
-                                        .background(
-                                            BreedifyColors.Secondary.copy(alpha = 0.1f),
-                                            CircleShape
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "✅",
-                                        fontSize = 32.sp
-                                    )
-                                }
 
-                                Spacer(modifier = Modifier.height(16.dp))
 
-                                Text(
-                                    text = "Image Uploaded Successfully!",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = BreedifyColors.TextPrimary,
-                                    fontWeight = FontWeight.SemiBold,
-                                    textAlign = TextAlign.Center
-                                )
 
-                                Text(
-                                    text = uploadedFileName.ifEmpty { "dog_image.jpg" },
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = BreedifyColors.TextSecondary
-                                )
-
-                                Spacer(modifier = Modifier.height(24.dp))
-
-                                Button(
-                                    onClick = { onNavigate("ml_prediction") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = BreedifyColors.Primary
-                                    )
-                                ) {
-                                    Text(
-                                        text = "Predict Breed",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        modifier = Modifier.padding(vertical = 8.dp)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(12.dp))
-
-                                OutlinedButton(
-                                    onClick = {
-                                        uploadState = UploadState.IDLE
-                                        uploadedFileName = ""
-                                    },
-                                    shape = RoundedCornerShape(8.dp)
-                                ) {
-                                    Text("🗑️ Upload Different Image")
-                                }
-                            }
-                        }
-
-                        UploadState.ERROR -> {
-                            // Error state
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(24.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(64.dp)
-                                        .background(
-                                            Color.Red.copy(alpha = 0.1f),
-                                            CircleShape
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "❌",
-                                        fontSize = 32.sp
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                Text(
-                                    text = "Upload Failed",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = Color.Red,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                Text(
-                                    text = errorMessage,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = BreedifyColors.TextSecondary,
-                                    textAlign = TextAlign.Center
-                                )
-
-                                Spacer(modifier = Modifier.height(24.dp))
-
-                                Button(
-                                    onClick = {
-                                        uploadState = UploadState.IDLE
-                                        errorMessage = ""
-                                    },
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = BreedifyColors.Primary
-                                    )
-                                ) {
-                                    Text("Try Again")
-                                }
-                            }
-                        }
                     }
                 }
 
@@ -359,9 +211,8 @@ fun DogBreedIdentificationScreen(
                     ) {
                         Button(
                             onClick = {
-                                onTakePhoto()
-                                uploadedFileName = "camera_photo.jpg"
                                 uploadState = UploadState.WAITING_FOR_FILE
+                                onTakePhoto()
                             },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
@@ -380,9 +231,16 @@ fun DogBreedIdentificationScreen(
 
                         OutlinedButton(
                             onClick = {
-                                onUploadPhoto()
-                                uploadedFileName = "gallery_photo.jpg"
                                 uploadState = UploadState.WAITING_FOR_FILE
+                                onUploadPhoto { success ->
+                                    if (success) {
+                                        // Image selected, navigate to prediction
+                                        onNavigate("prediction")
+                                    } else {
+                                        // User cancelled, reset state
+                                        uploadState = UploadState.IDLE
+                                    }
+                                }
                             },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
