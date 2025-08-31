@@ -74,12 +74,19 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
     
     // Image loading
     implementation("io.coil-kt:coil-compose:2.4.0")
     
     // ViewModel Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    
+    // JSON parsing
+    implementation("org.json:json:20230618")
+    
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     
     // TensorFlow Lite - Use nightly build with FULLY_CONNECTED v12 support
     implementation("org.tensorflow:tensorflow-lite:0.0.0-nightly-SNAPSHOT")
