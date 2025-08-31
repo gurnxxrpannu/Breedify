@@ -24,6 +24,8 @@ import com.example.breedify.components.PredictionLoadingAnimation
 import com.example.breedify.screens.homeScreen.BreedifyColors
 import com.example.breedify.utils.MLUtils
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 data class PredictionResult(
     val breedName: String,
@@ -38,6 +40,7 @@ fun MLPredictionScreen(
 ) {
     var isLoading by remember { mutableStateOf(true) }
     var statusMessage by remember { mutableStateOf("Initializing...") }
+    var predictionProgress by remember { mutableIntStateOf(0) }
     var predictionResult by remember { mutableStateOf<PredictionResult?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     
@@ -48,27 +51,77 @@ fun MLPredictionScreen(
     LaunchedEffect(imageUri) {
         scope.launch {
             try {
+                // Phase 1: Initial setup and connection
                 statusMessage = "Connecting to Hugging Face API..."
-                val mlUtils = MLUtils(context)
+                delay(800L)
                 
                 statusMessage = "Preparing image for analysis..."
-                // Small delay to show status update
-                kotlinx.coroutines.delay(500)
+                delay(600L)
                 
+                // Phase 2: Start ML prediction with progress counter
                 statusMessage = "Analyzing with Breedify AI model..."
-                val result = mlUtils.predictBreed(imageUri)
                 
-                statusMessage = "Processing results from API..."
-                kotlinx.coroutines.delay(300)
+                // Start the actual API call in background
+                val mlUtils = MLUtils(context)
+                var apiResult: PredictionResult? = null
+                var apiError: Exception? = null
                 
-                if (result != null) {
-                    predictionResult = result
-                    onPredictionComplete(result)
-                    isLoading = false
-                } else {
-                    errorMessage = "Failed to predict breed"
-                    isLoading = false
+                // Launch API call in parallel with progress animation
+                val apiJob = scope.launch {
+                    try {
+                        apiResult = mlUtils.predictBreed(imageUri)
+                    } catch (e: Exception) {
+                        apiError = e
+                    }
                 }
+                
+                // Phase 3: Realistic AI prediction with variable speed
+                
+                // Phase 3a: Slow initial processing (1-60%) - Model is analyzing
+                for (i in 1..60) {
+                    predictionProgress = i
+                    statusMessage = when {
+                        i < 20 -> "Analyzing image features..."
+                        i < 40 -> "Extracting visual patterns..."
+                        else -> "Comparing with breed database..."
+                    }
+                    delay(80L) // Slower for initial analysis
+                }
+                
+                // Simulate model finding the prediction at around 60-75%
+                val predictionFoundAt = Random.nextInt(60, 75)
+                
+                // Phase 3b: Medium speed until prediction is "found" (60-75%)
+                for (i in 61..predictionFoundAt) {
+                    predictionProgress = i
+                    statusMessage = "Identifying breed characteristics..."
+                    delay(60L) // Medium speed
+                }
+                
+                // Wait for API to complete if it hasn't already
+                apiJob.join()
+                
+                // Check API result
+                if (apiError != null) {
+                    throw apiError!!
+                }
+                
+                if (apiResult == null) {
+                    throw Exception("Failed to get prediction from API")
+                }
+                
+                // Phase 3c: Fast completion (75-100%) - Model is confident
+                statusMessage = "Finalizing prediction..."
+                for (i in (predictionFoundAt + 1)..100) {
+                    predictionProgress = i
+                    delay(20L) // Much faster once prediction is found
+                }
+                
+                // Complete prediction
+                predictionResult = apiResult
+                onPredictionComplete(apiResult!!)
+                isLoading = false
+                
             } catch (e: Exception) {
                 errorMessage = "Error: ${e.message}"
                 isLoading = false
@@ -154,12 +207,61 @@ fun MLPredictionScreen(
             ) {
                 when {
                     isLoading -> {
-                        // Loading state with dog paw Lottie animation
-                        PredictionLoadingAnimation(
-                            statusMessage = statusMessage,
-                            subMessage = "Please wait while we analyze your image...",
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        // Loading state with progress counter and dog paw animation
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            PredictionLoadingAnimation(
+                                statusMessage = "Analyzing breed...",
+                                subMessage = "AI model is processing your image",
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            
+                            if (predictionProgress > 0) {
+                                Spacer(modifier = Modifier.height(24.dp))
+                                
+                                // Progress counter
+                                Text(
+                                    text = "$predictionProgress%",
+                                    style = MaterialTheme.typography.headlineLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 48.sp
+                                    ),
+                                    color = BreedifyColors.Primary
+                                )
+                                
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
+                                Text(
+                                    text = statusMessage,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = BreedifyColors.TextSecondary,
+                                    textAlign = TextAlign.Center
+                                )
+                                
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                // Progress bar
+                                LinearProgressIndicator(
+                                    progress = predictionProgress / 100f,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(6.dp),
+                                    color = BreedifyColors.Primary,
+                                    trackColor = BreedifyColors.Primary.copy(alpha = 0.2f)
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                Text(
+                                    text = statusMessage,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = BreedifyColors.TextSecondary,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
                     
                     errorMessage != null -> {
