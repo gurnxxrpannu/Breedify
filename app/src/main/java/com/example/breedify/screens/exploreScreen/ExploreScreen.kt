@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import com.example.breedify.data.api.Breed
 import com.example.breedify.data.repository.DogRepository
 import com.example.breedify.components.DogBreedCard
+import com.example.breedify.components.LoadingAnimation
+import com.example.breedify.components.SmallLoadingAnimation
 import com.example.breedify.components.SkeletonDogBreedCard
 import com.example.breedify.navigation.BreedifyBottomNavigation
 import kotlinx.coroutines.launch
@@ -131,7 +133,10 @@ fun ExploreScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = ExploreColors.Primary)
+                LoadingAnimation(
+                    message = "Loading dog breeds...",
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         } else {
             // Breeds grid
@@ -271,10 +276,9 @@ private fun ShowMoreButton(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = Color.White,
-                    strokeWidth = 2.dp
+                SmallLoadingAnimation(
+                    size = 20,
+                    modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
