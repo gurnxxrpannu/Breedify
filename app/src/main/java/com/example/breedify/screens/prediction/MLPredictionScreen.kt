@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.breedify.components.PredictionLoadingAnimation
 import com.example.breedify.screens.homeScreen.BreedifyColors
 import com.example.breedify.utils.MLUtils
 import kotlinx.coroutines.launch
@@ -153,29 +154,11 @@ fun MLPredictionScreen(
             ) {
                 when {
                     isLoading -> {
-                        // Loading state
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(48.dp),
-                            color = BreedifyColors.Primary
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        Text(
-                            text = statusMessage,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = BreedifyColors.TextPrimary,
-                            textAlign = TextAlign.Center
-                        )
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        Text(
-                            text = "Please wait while we analyze your image...",
-                            fontSize = 14.sp,
-                            color = BreedifyColors.TextSecondary,
-                            textAlign = TextAlign.Center
+                        // Loading state with dog paw Lottie animation
+                        PredictionLoadingAnimation(
+                            statusMessage = statusMessage,
+                            subMessage = "Please wait while we analyze your image...",
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                     
