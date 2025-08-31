@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
 import com.example.breedify.R
+import com.example.breedify.components.DogBreedLoadingAnimation
 import com.example.breedify.navigation.BreedifyBottomNavigation
 import com.example.breedify.screens.homeScreen.BreedifyColors
 
@@ -245,36 +246,16 @@ fun DogBreedIdentificationScreen(
                     }
 
                     UploadState.PROCESSING -> {
-                        // Processing state
-                        Column(
+                        // Processing state with dog paw Lottie animation
+                        Box(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "🔍",
-                                fontSize = 48.sp,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-
-                            Text(
-                                text = "Looking for dog breed...",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = BreedifyColors.TextPrimary,
-                                fontWeight = FontWeight.SemiBold,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            LinearProgressIndicator(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(4.dp),
-                                color = BreedifyColors.Secondary,
-                                trackColor = BreedifyColors.Secondary.copy(alpha = 0.2f)
+                            DogBreedLoadingAnimation(
+                                message = "Looking for dog breed...",
+                                size = 120
                             )
                         }
                     }
