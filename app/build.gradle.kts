@@ -81,6 +81,10 @@ dependencies {
     
     // Image loading
     implementation("io.coil-kt:coil-compose:2.4.0")
+    
+    // Lottie animations
+    implementation("com.airbnb.android:lottie-compose:6.1.0")
+    
     implementation(libs.generativeai)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
