@@ -823,7 +823,7 @@ private fun AIAssistantCard(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .background(
-                                        Color.White.copy(alpha = 0.15f),
+                                        Color(0xFFFFFDE7), // Light yellow color
                                         RoundedCornerShape(16.dp)
                                     )
                                     .padding(20.dp)
@@ -839,13 +839,13 @@ private fun AIAssistantCard(
                                             Text(
                                                 text = "•",
                                                 fontSize = 16.sp,
-                                                color = Color.White,
+                                                color = Color(0xFF333333), // Dark text for contrast
                                                 modifier = Modifier.padding(end = 8.dp, top = 2.dp)
                                             )
                                             Text(
                                                 text = fact.fact,
                                                 fontSize = 14.sp,
-                                                color = Color.White.copy(alpha = 0.95f),
+                                                color = Color(0xFF333333), // Dark text for contrast
                                                 lineHeight = 20.sp,
                                                 modifier = Modifier.weight(1f)
                                             )
