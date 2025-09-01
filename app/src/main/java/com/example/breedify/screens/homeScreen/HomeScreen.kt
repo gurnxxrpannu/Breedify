@@ -1,6 +1,7 @@
 package com.example.breedify.screens.homeScreen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -1081,8 +1082,13 @@ private fun AIAssistantCard(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .background(
-                                        Color(0xFFFFFDE7), // Light yellow color
+                                        Color(0xFFF0E6FA), // Light lavender color that complements the purple-blue gradient
                                         RoundedCornerShape(16.dp)
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color(0xFF9b59b6).copy(alpha = 0.3f),
+                                        shape = RoundedCornerShape(16.dp)
                                     )
                                     .padding(20.dp)
                             ) {
@@ -1097,13 +1103,13 @@ private fun AIAssistantCard(
                                             Text(
                                                 text = "•",
                                                 fontSize = 16.sp,
-                                                color = Color(0xFF333333), // Dark text for contrast
+                                                color = Color(0xFF764ba2), // Purple bullet points matching gradient
                                                 modifier = Modifier.padding(end = 8.dp, top = 2.dp)
                                             )
                                             Text(
                                                 text = fact.fact,
                                                 fontSize = 14.sp,
-                                                color = Color(0xFF333333), // Dark text for contrast
+                                                color = Color(0xFF4A4A6A), // Dark purple-gray text for better readability
                                                 lineHeight = 20.sp,
                                                 modifier = Modifier.weight(1f)
                                             )
