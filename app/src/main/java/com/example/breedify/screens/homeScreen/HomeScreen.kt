@@ -181,6 +181,226 @@ fun HomeScreen(
 }
 
 @Composable
+fun ImageSourceDialog(
+    onDismiss: () -> Unit,
+    onCameraSelected: () -> Unit,
+    onGallerySelected: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = BreedifyColors.CardBackground
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            ) {
+                Text(
+                    text = "Select Image Source",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = BreedifyColors.TextPrimary,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                // Camera option
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .clickable { onCameraSelected() },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = BreedifyColors.Primary.copy(alpha = 0.1f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(
+                                    BreedifyColors.Primary,
+                                    CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "📷",
+                                fontSize = 24.sp
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        Column {
+                            Text(
+                                text = "Camera",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = BreedifyColors.TextPrimary
+                            )
+                            Text(
+                                text = "Take a new photo",
+                                fontSize = 14.sp,
+                                color = BreedifyColors.TextSecondary
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Gallery option
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .clickable { onGallerySelected() },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = BreedifyColors.Secondary.copy(alpha = 0.1f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(
+                                    BreedifyColors.Secondary,
+                                    CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "📁",
+                                fontSize = 24.sp
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        Column {
+                            Text(
+                                text = "Gallery",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = BreedifyColors.TextPrimary
+                            )
+                            Text(
+                                text = "Choose from files",
+                                fontSize = 14.sp,
+                                color = BreedifyColors.TextSecondary
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Cancel button
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(
+                        text = "Cancel",
+                        color = BreedifyColors.TextSecondary
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun ChatbotDialog(onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = BreedifyColors.CardBackground
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "PawPal Assistant 🐾",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = BreedifyColors.TextPrimary
+                    )
+
+                    TextButton(onClick = onDismiss) {
+                        Text("Close", color = BreedifyColors.Primary)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .background(
+                            BreedifyColors.SearchBackground,
+                            RoundedCornerShape(12.dp)
+                        )
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Hi! I'm PawPal 🐾\nAsk me anything about dog breeds!",
+                        textAlign = TextAlign.Center,
+                        color = BreedifyColors.TextSecondary,
+                        fontSize = 16.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = { },
+                    placeholder = { Text("Ask about dog breeds...") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun HeaderSection() {
     Column(
         modifier = Modifier
@@ -906,6 +1126,15 @@ private fun BreedSelectorDialog(
     onBreedSelected: (Breed) -> Unit,
     onDismiss: () -> Unit
 ) {
+    var searchText by remember { mutableStateOf("") }
+    val filteredBreeds = remember(searchText, breeds) {
+        if (searchText.isEmpty()) {
+            breeds
+        } else {
+            breeds.filter { it.name.contains(searchText, ignoreCase = true) }
+        }
+    }
+    
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
@@ -940,10 +1169,61 @@ private fun BreedSelectorDialog(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
+                // Search box
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    placeholder = {
+                        Text(
+                            text = "Search breeds...",
+                            color = BreedifyColors.TextSecondary
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.dog_searchicon),
+                            contentDescription = "Search",
+                            tint = BreedifyColors.TextSecondary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(25.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedBorderColor = BreedifyColors.Primary,
+                        unfocusedBorderColor = Color.Transparent
+                    ),
+                    singleLine = true
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f)
                 ) {
-                    items(breeds) { breed ->
+                    if (filteredBreeds.isEmpty() && searchText.isNotEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "No breeds found matching '${searchText}'",
+                                    fontSize = 16.sp,
+                                    color = BreedifyColors.TextSecondary,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    } else {
+                        items(filteredBreeds) { breed ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1000,7 +1280,7 @@ private fun BreedSelectorDialog(
 }
 
 @Composable
-private fun IdentifyButtonWithEmoji(
+fun IdentifyButtonWithEmoji(
     text: String,
     emoji: String,
     onClick: () -> Unit,
@@ -1042,7 +1322,7 @@ private fun IdentifyButtonWithEmoji(
 }
 
 @Composable
-private fun FloatingChatbotButton(
+fun FloatingChatbotButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -1060,227 +1340,10 @@ private fun FloatingChatbotButton(
     }
 }
 
-@Composable
-private fun ChatbotDialog(onDismiss: () -> Unit) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(400.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = BreedifyColors.CardBackground
-            )
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "PawPal Assistant 🐾",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = BreedifyColors.TextPrimary
-                    )
-                    
-                    TextButton(onClick = onDismiss) {
-                        Text("Close", color = BreedifyColors.Primary)
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .background(
-                            BreedifyColors.SearchBackground,
-                            RoundedCornerShape(12.dp)
-                        )
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Hi! I'm PawPal 🐾\nAsk me anything about dog breeds!",
-                        textAlign = TextAlign.Center,
-                        color = BreedifyColors.TextSecondary,
-                        fontSize = 16.sp
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = { },
-                    placeholder = { Text("Ask about dog breeds...") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                )
-            }
-        }
-    }
-}
 
-@Composable
-private fun ImageSourceDialog(
-    onDismiss: () -> Unit,
-    onCameraSelected: () -> Unit,
-    onGallerySelected: () -> Unit
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = BreedifyColors.CardBackground
-            )
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-            ) {
-                Text(
-                    text = "Select Image Source",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = BreedifyColors.TextPrimary,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-                
-                // Camera option
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(80.dp)
-                        .clickable { onCameraSelected() },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = BreedifyColors.Primary.copy(alpha = 0.1f)
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .background(
-                                    BreedifyColors.Primary,
-                                    CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "📷",
-                                fontSize = 24.sp
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.width(16.dp))
-                        
-                        Column {
-                            Text(
-                                text = "Camera",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = BreedifyColors.TextPrimary
-                            )
-                            Text(
-                                text = "Take a new photo",
-                                fontSize = 14.sp,
-                                color = BreedifyColors.TextSecondary
-                            )
-                        }
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                // Gallery option
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(80.dp)
-                        .clickable { onGallerySelected() },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = BreedifyColors.Secondary.copy(alpha = 0.1f)
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .background(
-                                    BreedifyColors.Secondary,
-                                    CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "📁",
-                                fontSize = 24.sp
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.width(16.dp))
-                        
-                        Column {
-                            Text(
-                                text = "Gallery",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = BreedifyColors.TextPrimary
-                            )
-                            Text(
-                                text = "Choose from files",
-                                fontSize = 14.sp,
-                                color = BreedifyColors.TextSecondary
-                            )
-                        }
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Cancel button
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
-                    Text(
-                        text = "Cancel",
-                        color = BreedifyColors.TextSecondary
-                    )
-                }
-            }
-        }
-    }
-}
 
 // Sample data for trending breeds - now using Breed from API
-private fun getSampleBreeds(): List<Breed> {
+fun getSampleBreeds(): List<Breed> {
     return listOf(
         Breed(id = 1, name = "Golden Retriever"),
         Breed(id = 2, name = "Labrador"),
@@ -1289,4 +1352,5 @@ private fun getSampleBreeds(): List<Breed> {
         Breed(id = 5, name = "Poodle"),
         Breed(id = 6, name = "Beagle")
     )
+}
 }
