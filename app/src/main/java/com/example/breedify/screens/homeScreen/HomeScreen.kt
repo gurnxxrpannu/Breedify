@@ -946,40 +946,19 @@ private fun AIAssistantCard(
     isLoading: Boolean,
     onFunFactsClick: () -> Unit
 ) {
-    Card(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight(),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .background(
-                    brush = Brush.verticalGradient(
-                        listOf(
-                            Color(0xFF667eea),
-                            Color(0xFF764ba2),
-                            Color(0xFF9b59b6)
-                        )
-                    )
-                )
-                .padding(32.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
                 if (selectedBreed == null) {
                     // Show animation when no breed is selected
                     Box(
                         modifier = Modifier
-                            .size(200.dp)
+                            .fillMaxWidth(0.8f)
+                            .aspectRatio(1f)
                             .background(
                                 Color.White.copy(alpha = 0.1f),
                                 RoundedCornerShape(100.dp)
@@ -987,8 +966,8 @@ private fun AIAssistantCard(
                         contentAlignment = Alignment.Center
                     ) {
                         ChatbotAnimation(
-                            modifier = Modifier.size(180.dp),
-                            size = 180
+                            modifier = Modifier.fillMaxSize(0.9f),
+                            size = 300
                         )
                     }
                     
@@ -1161,9 +1140,6 @@ private fun AIAssistantCard(
                 }
             }
         }
-    }
-}
-
 @Composable
 private fun BreedSelectorDialog(
     breeds: List<Breed>,
