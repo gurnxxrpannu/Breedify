@@ -21,8 +21,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
 
 import androidx.compose.ui.tooling.preview.Preview
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -1015,6 +1019,40 @@ private fun AIAssistantCard(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Breed image
+                        val imageUrl = selectedBreed.image?.url ?: 
+                            if (selectedBreed.reference_image_id?.isNotEmpty() == true) {
+                                "https://cdn2.thedogapi.com/images/${selectedBreed.reference_image_id}.jpg"
+                            } else null
+                            
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color.White.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (imageUrl != null) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(imageUrl)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = "${selectedBreed.name} image",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                Text(
+                                    text = "🐕",
+                                    fontSize = 48.sp,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
                         // Breed name
                         Text(
                             text = selectedBreed.name,
@@ -1127,11 +1165,31 @@ private fun BreedSelectorDialog(
     onDismiss: () -> Unit
 ) {
     var searchText by remember { mutableStateOf("") }
-    val filteredBreeds = remember(searchText, breeds) {
-        if (searchText.isEmpty()) {
-            breeds
+    var searchResults by remember { mutableStateOf<List<Breed>>(breeds) }
+    var isSearching by remember { mutableStateOf(false) }
+    
+    val repository = remember { DogRepository() }
+    val scope = rememberCoroutineScope()
+    
+    // Search functionality using API
+    LaunchedEffect(searchText) {
+        if (searchText.isNotEmpty()) {
+            isSearching = true
+            scope.launch {
+                repository.searchBreeds(searchText).fold(
+                    onSuccess = { results ->
+                        searchResults = results
+                        isSearching = false
+                    },
+                    onFailure = { 
+                        // Fallback to local filtering if API search fails
+                        searchResults = breeds.filter { it.name.contains(searchText, ignoreCase = true) }
+                        isSearching = false
+                    }
+                )
+            }
         } else {
-            breeds.filter { it.name.contains(searchText, ignoreCase = true) }
+            searchResults = breeds
         }
     }
     
@@ -1206,7 +1264,29 @@ private fun BreedSelectorDialog(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    if (filteredBreeds.isEmpty() && searchText.isNotEmpty()) {
+                    if (isSearching) {
+                        // Show loading indicator when searching
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                SmallLoadingAnimation(
+                                    size = 32,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Searching for '${searchText}'...",
+                                    fontSize = 16.sp,
+                                    color = BreedifyColors.TextSecondary,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    } else if (searchResults.isEmpty() && searchText.isNotEmpty()) {
                         item {
                             Box(
                                 modifier = Modifier
@@ -1223,7 +1303,7 @@ private fun BreedSelectorDialog(
                             }
                         }
                     } else {
-                        items(filteredBreeds) { breed ->
+                        items(searchResults) { breed ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1242,17 +1322,35 @@ private fun BreedSelectorDialog(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(40.dp)
+                                        .size(48.dp)
+                                        .clip(CircleShape)
                                         .background(
                                             BreedifyColors.Primary.copy(alpha = 0.1f),
                                             CircleShape
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(
-                                        text = "🐕",
-                                        fontSize = 20.sp
-                                    )
+                                    val imageUrl = breed.image?.url ?: 
+                                        if (breed.reference_image_id?.isNotEmpty() == true) {
+                                            "https://cdn2.thedogapi.com/images/${breed.reference_image_id}.jpg"
+                                        } else null
+                                        
+                                    if (imageUrl != null) {
+                                        AsyncImage(
+                                            model = ImageRequest.Builder(LocalContext.current)
+                                                .data(imageUrl)
+                                                .crossfade(true)
+                                                .build(),
+                                            contentDescription = "${breed.name} image",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    } else {
+                                        Text(
+                                            text = "🐕",
+                                            fontSize = 20.sp
+                                        )
+                                    }
                                 }
                                 
                                 Spacer(modifier = Modifier.width(16.dp))
