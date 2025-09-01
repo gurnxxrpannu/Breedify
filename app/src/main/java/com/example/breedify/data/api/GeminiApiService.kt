@@ -2,20 +2,34 @@ package com.example.breedify.data.api
 
 import android.graphics.Bitmap
 import com.example.breedify.BuildConfig
+import com.example.breedify.utils.Constants
+import com.example.breedify.utils.Logger
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * Service for handling Gemini AI API interactions
+ */
 class GeminiApiService {
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
+        modelName = Constants.GEMINI_MODEL_NAME,
         apiKey = BuildConfig.GEMINI_API_KEY
     )
+    
+    companion object {
+        private const val TAG = "GeminiApiService"
+    }
 
+    /**
+     * Identifies dog breed from an image using Gemini AI
+     */
     suspend fun identifyDogBreed(bitmap: Bitmap): Result<String> {
         return withContext(Dispatchers.IO) {
             try {
+                Logger.d("Starting dog breed identification", TAG)
+                
                 val prompt = """
                     Analyze this image and identify the dog breed. Please provide:
                     1. The most likely breed name
@@ -36,16 +50,25 @@ class GeminiApiService {
                 }
 
                 val response = generativeModel.generateContent(inputContent)
-                Result.success(response.text ?: "Unable to identify breed")
+                val result = response.text ?: "Unable to identify breed"
+                
+                Logger.d("Dog breed identification completed successfully", TAG)
+                Result.success(result)
             } catch (e: Exception) {
+                Logger.e("Error identifying dog breed", e, TAG)
                 Result.failure(e)
             }
         }
     }
 
+    /**
+     * Answers questions about a dog based on an image
+     */
     suspend fun askAboutDog(bitmap: Bitmap, question: String): Result<String> {
         return withContext(Dispatchers.IO) {
             try {
+                Logger.d("Processing dog-related question with image", TAG)
+                
                 val prompt = """
                     Looking at this dog image, please answer the following question:
                     $question
@@ -59,16 +82,25 @@ class GeminiApiService {
                 }
 
                 val response = generativeModel.generateContent(inputContent)
-                Result.success(response.text ?: "Unable to provide answer")
+                val result = response.text ?: "Unable to provide answer"
+                
+                Logger.d("Dog question answered successfully", TAG)
+                Result.success(result)
             } catch (e: Exception) {
+                Logger.e("Error answering dog question", e, TAG)
                 Result.failure(e)
             }
         }
     }
 
+    /**
+     * Gets comprehensive information about a specific dog breed
+     */
     suspend fun getBreedInformation(breedName: String): Result<String> {
         return withContext(Dispatchers.IO) {
             try {
+                Logger.d("Fetching breed information for: $breedName", TAG)
+                
                 val prompt = """
                     Provide comprehensive information about the $breedName dog breed including:
                     1. Origin and history
@@ -82,16 +114,31 @@ class GeminiApiService {
                 """.trimIndent()
 
                 val response = generativeModel.generateContent(prompt)
-                Result.success(response.text ?: "Unable to get breed information")
+                val result = response.text ?: "Unable to get breed information"
+                
+                Logger.d("Breed information retrieved successfully", TAG)
+                Result.success(result)
             } catch (e: Exception) {
+                Logger.e("Error getting breed information", e, TAG)
                 Result.failure(e)
             }
         }
     }
 
+    /**
+     * Generates conversational responses for the chatbot
+     */
     suspend fun generateChatResponse(message: String): Result<String> {
         return withContext(Dispatchers.IO) {
             try {
+                Logger.d("Generating chat response for message", TAG)
+                
+                if (message.length > Constants.MAX_MESSAGE_LENGTH) {
+                    return@withContext Result.failure(
+                        IllegalArgumentException("Message too long. Maximum ${Constants.MAX_MESSAGE_LENGTH} characters allowed.")
+                    )
+                }
+                
                 val prompt = """
                     You are Breedify Assistant, a helpful AI assistant specialized in dogs and dog breeds. 
                     Please respond to the following message in a friendly and informative way.
@@ -103,8 +150,12 @@ class GeminiApiService {
                 """.trimIndent()
 
                 val response = generativeModel.generateContent(prompt)
-                Result.success(response.text ?: "I'm sorry, I couldn't generate a response.")
+                val result = response.text ?: "I'm sorry, I couldn't generate a response."
+                
+                Logger.d("Chat response generated successfully", TAG)
+                Result.success(result)
             } catch (e: Exception) {
+                Logger.e("Error generating chat response", e, TAG)
                 Result.failure(e)
             }
         }

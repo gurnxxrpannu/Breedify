@@ -141,8 +141,8 @@ fun HomeScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            // Dog Facts section
-            DogFactsSection()
+            // Fun Facts Carousel section
+            com.example.breedify.components.FunFactsCarousel()
             
             Spacer(modifier = Modifier.height(32.dp))
             
