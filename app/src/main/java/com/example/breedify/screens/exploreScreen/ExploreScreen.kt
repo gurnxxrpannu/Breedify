@@ -7,8 +7,6 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +16,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.painterResource
+import com.example.breedify.R
 import com.example.breedify.data.api.Breed
 import com.example.breedify.data.repository.DogRepository
 import com.example.breedify.components.DogBreedCard
@@ -233,9 +233,10 @@ private fun ExploreSearchBar(
         },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Default.Search,
+                painter = painterResource(id = R.drawable.gog_searchicon2),
                 contentDescription = "Search",
-                tint = ExploreColors.TextSecondary
+                tint = ExploreColors.TextSecondary,
+                modifier = Modifier.size(20.dp)
             )
         },
         modifier = Modifier
