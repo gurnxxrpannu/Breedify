@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,8 +26,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.res.painterResource
 import com.example.breedify.R
 import com.example.breedify.components.SmallLoadingAnimation
+import com.example.breedify.components.ChatbotAnimation
 import com.example.breedify.data.api.Breed
 import com.example.breedify.data.api.BreedFact
 import com.example.breedify.data.repository.DogRepository
@@ -272,9 +275,10 @@ private fun SearchBar(
         },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Default.Search,
+                painter = painterResource(id = R.drawable.dog_searchicon),
                 contentDescription = "Search",
-                tint = BreedifyColors.TextSecondary
+                tint = BreedifyColors.TextSecondary,
+                modifier = Modifier.size(20.dp)
             )
         },
         modifier = Modifier
@@ -624,131 +628,16 @@ private fun BreedSpecificFactsSection(breeds: List<Breed>) {
             modifier = Modifier.padding(bottom = 16.dp)
         )
         
-        // Breed selector card
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .clickable { showBreedSelector = true },
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = BreedifyColors.CardBackground
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Breed selector icon
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .background(
-                            BreedifyColors.Secondary.copy(alpha = 0.1f),
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "🐕‍🦺",
-                        fontSize = 32.sp
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                if (selectedBreed == null) {
-                    Text(
-                        text = "Choose a Breed",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = BreedifyColors.TextPrimary,
-                        textAlign = TextAlign.Center
-                    )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    Text(
-                        text = "Tap to select a breed and discover amazing facts about it!",
-                        fontSize = 14.sp,
-                        color = BreedifyColors.TextSecondary,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 20.sp
-                    )
-                } else {
-                    Text(
-                        text = selectedBreed!!.name,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = BreedifyColors.Primary,
-                        textAlign = TextAlign.Center
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    if (isLoading) {
-                        SmallLoadingAnimation(
-                            size = 24,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Loading facts...",
-                            fontSize = 14.sp,
-                            color = BreedifyColors.TextSecondary
-                        )
-                    } else {
-                        // Display facts
-                        breedFacts.forEachIndexed { index, fact ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.Top
-                            ) {
-                                Text(
-                                    text = "•",
-                                    fontSize = 16.sp,
-                                    color = BreedifyColors.Primary,
-                                    modifier = Modifier.padding(end = 8.dp, top = 2.dp)
-                                )
-                                Text(
-                                    text = fact.fact,
-                                    fontSize = 14.sp,
-                                    color = BreedifyColors.TextPrimary,
-                                    lineHeight = 20.sp,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                            if (index < breedFacts.size - 1) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-                        }
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(20.dp))
-                
-                Button(
-                    onClick = { showBreedSelector = true },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BreedifyColors.Secondary
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = if (selectedBreed == null) "🔍 Select Breed" else "🔄 Change Breed",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-                }
-            }
-        }
+        // AI Assistant Fun Facts Card
+        AIAssistantCard(
+            selectedBreed = selectedBreed,
+            breedFacts = breedFacts,
+            isLoading = isLoading,
+            onFunFactsClick = { showBreedSelector = true }
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+
     }
     
     // Breed selector dialog
@@ -822,6 +711,192 @@ private fun getInterestingBreedFacts(breedName: String): List<BreedFact> {
             BreedFact(1, "Every dog breed has fascinating history and traits developed over centuries of selective breeding."),
             BreedFact(2, "This breed has loyal fans worldwide who appreciate their distinctive personality and appearance.")
         )
+    }
+}
+
+@Composable
+private fun AIAssistantCard(
+    selectedBreed: Breed?,
+    breedFacts: List<BreedFact>,
+    isLoading: Boolean,
+    onFunFactsClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .background(
+                    brush = Brush.verticalGradient(
+                        listOf(
+                            Color(0xFF667eea),
+                            Color(0xFF764ba2),
+                            Color(0xFF9b59b6)
+                        )
+                    )
+                )
+                .padding(32.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                if (selectedBreed == null) {
+                    // Show animation when no breed is selected
+                    Box(
+                        modifier = Modifier
+                            .size(200.dp)
+                            .background(
+                                Color.White.copy(alpha = 0.1f),
+                                RoundedCornerShape(100.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ChatbotAnimation(
+                            modifier = Modifier.size(180.dp),
+                            size = 180
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    Button(
+                        onClick = onFunFactsClick,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White.copy(alpha = 0.9f),
+                            contentColor = Color(0xFF667eea)
+                        ),
+                        shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(48.dp),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 4.dp,
+                            pressedElevation = 8.dp
+                        )
+                    ) {
+                        Text(
+                            text = "🧠 Fun Facts",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else {
+                    // Show breed facts when breed is selected
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Breed name
+                        Text(
+                            text = selectedBreed.name,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        if (isLoading) {
+                            SmallLoadingAnimation(
+                                size = 32,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Loading facts...",
+                                fontSize = 14.sp,
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                        } else {
+                            // Display facts in a styled box
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        Color.White.copy(alpha = 0.15f),
+                                        RoundedCornerShape(16.dp)
+                                    )
+                                    .padding(20.dp)
+                            ) {
+                                Column {
+                                    breedFacts.take(3).forEachIndexed { index, fact ->
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 6.dp),
+                                            verticalAlignment = Alignment.Top
+                                        ) {
+                                            Text(
+                                                text = "•",
+                                                fontSize = 16.sp,
+                                                color = Color.White,
+                                                modifier = Modifier.padding(end = 8.dp, top = 2.dp)
+                                            )
+                                            Text(
+                                                text = fact.fact,
+                                                fontSize = 14.sp,
+                                                color = Color.White.copy(alpha = 0.95f),
+                                                lineHeight = 20.sp,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
+                                        if (index < breedFacts.take(3).size - 1) {
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(20.dp))
+                        
+                        Button(
+                            onClick = onFunFactsClick,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.White.copy(alpha = 0.9f),
+                                contentColor = Color(0xFF667eea)
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                            modifier = Modifier
+                                .fillMaxWidth(0.8f)
+                                .height(48.dp),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 4.dp,
+                                pressedElevation = 8.dp
+                            )
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.gog_searchicon2),
+                                    contentDescription = "Search",
+                                    modifier = Modifier.size(18.dp),
+                                    tint = Color(0xFF667eea)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Search Another Breed",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
