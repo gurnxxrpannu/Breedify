@@ -72,7 +72,7 @@ Breedify is a production-ready Android application built with Jetpack Compose th
 - **Error Handling**: Centralized error management with user-friendly messaging
 
 ### **AI & Machine Learning**
-- **Hugging Face API**: Cloud-based breed identification with multiple model fallbacks
+- **Hugging Face API**: Cloud-based  breed identification with multiple model fallbacks
   - Microsoft ResNet-50 (Primary model)
   - SkyAU Dog Breed Classifier ViT (Fallback)
   - Google ViT Base Patch16-224 (Tertiary)
