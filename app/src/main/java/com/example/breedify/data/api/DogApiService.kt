@@ -8,6 +8,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
+import com.google.gson.annotations.SerializedName
 
 interface DogApiService {
     
@@ -114,7 +115,8 @@ data class Breed(
     val reference_image_id: String? = null,
     val image: BreedImage? = null,
     val weight: Weight? = null,
-    val height: Height? = null
+    val height: Height? = null,
+    @SerializedName("alt_names") val altNames: String? = null
 )
 
 data class BreedImage(

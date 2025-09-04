@@ -58,13 +58,42 @@ class DogRepository {
     
     suspend fun searchBreeds(query: String): Result<List<Breed>> {
         return try {
-            val response = api.searchBreeds(BuildConfig.DOG_API_KEY, query)
-            if (response.isSuccessful) {
-                Result.success(response.body() ?: emptyList())
+            // First try direct search
+            val searchResponse = api.searchBreeds(BuildConfig.DOG_API_KEY, query)
+            val breeds = if (searchResponse.isSuccessful) {
+                searchResponse.body() ?: emptyList()
             } else {
-                Result.failure(Exception("Failed to search breeds: ${response.message()}"))
+                emptyList()
+            }
+            
+            // If no results, try getting all breeds and filtering locally
+            if (breeds.isEmpty()) {
+                val allBreeds = getAllBreeds().getOrNull() ?: emptyList()
+                val normalizedQuery = query.lowercase().trim()
+                
+                val matchedBreeds = allBreeds.filter { breed ->
+                    breed.name?.lowercase()?.contains(normalizedQuery) == true ||
+                    breed.altNames?.lowercase()?.contains(normalizedQuery) == true ||
+                    breed.name?.lowercase()?.split(" ")?.any { it.startsWith(normalizedQuery) } == true
+                }
+                
+                if (matchedBreeds.isNotEmpty()) {
+                    Result.success(matchedBreeds)
+                } else {
+                    // Try partial matching if no exact matches found
+                    val partialMatches = allBreeds.filter { breed ->
+                        normalizedQuery.split(" ").any { part ->
+                            breed.name?.lowercase()?.contains(part) == true ||
+                            breed.altNames?.lowercase()?.contains(part) == true
+                        }
+                    }
+                    Result.success(partialMatches)
+                }
+            } else {
+                Result.success(breeds)
             }
         } catch (e: Exception) {
+            Log.e("DogRepository", "Error searching breeds: ${e.message}", e)
             Result.failure(e)
         }
     }

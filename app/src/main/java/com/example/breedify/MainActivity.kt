@@ -18,6 +18,7 @@ import com.example.breedify.screens.welcomeScreen.WelcomeScreen
 import com.example.breedify.screens.homeScreen.HomeScreen
 import com.example.breedify.screens.exploreScreen.ExploreScreen
 import com.example.breedify.screens.prediction.MLPredictionScreen
+import com.example.breedify.screens.prediction.GeminiPredictionScreen
 import com.example.breedify.screens.dogDetailScreen.DogDetailScreen
 import com.example.breedify.screens.chatbotScreen.ChatbotScreen
 import com.example.breedify.screens.favoritesScreen.FavoritesScreen
@@ -128,8 +129,16 @@ class MainActivity : ComponentActivity() {
                                         val processedBitmap = CameraUtils.processImageForML(uri, context)
                                         if (processedBitmap != null) {
                                             Toast.makeText(context, "Image uploaded and processed for ML classification!", Toast.LENGTH_LONG).show()
-                                            previousScreen = currentScreen
-                                            currentScreen = "prediction"
+                                            // Show options for ML or Gemini prediction
+                                            val options = arrayOf("Use ML Model", "Use Gemini AI")
+                                            android.app.AlertDialog.Builder(context)
+                                                .setTitle("Choose Prediction Method")
+                                                .setItems(options) { _, which ->
+                                                    previousScreen = currentScreen
+                                                    currentScreen = if (which == 0) "prediction" else "gemini_prediction"
+                                                }
+                                                .setNegativeButton("Cancel", null)
+                                                .show()
                                         } else {
                                             Toast.makeText(context, "Failed to process image", Toast.LENGTH_SHORT).show()
                                         }
@@ -194,7 +203,32 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onChatbotClick = { 
                                     previousScreen = currentScreen
-                                    currentScreen = "chatbot" 
+                                    currentScreen = "chatbot"
+                                },
+                                onGeminiAnalysis = { onResult ->
+                                    // Show options for camera or gallery for Gemini analysis
+                                    val options = arrayOf("Take Photo", "Choose from Gallery")
+                                    android.app.AlertDialog.Builder(context)
+                                        .setTitle("Select Image for Gemini Analysis")
+                                        .setItems(options) { _, which ->
+                                            if (which == 0) {
+                                                // Take photo
+                                                openCamera { uri ->
+                                                    capturedImageUri = uri
+                                                    onResult(uri != null)
+                                                }
+                                            } else {
+                                                // Choose from gallery
+                                                openFilePicker { uri ->
+                                                    capturedImageUri = uri
+                                                    onResult(uri != null)
+                                                }
+                                            }
+                                        }
+                                        .setNegativeButton("Cancel") { _, _ ->
+                                            onResult(false)
+                                        }
+                                        .show()
                                 }
                             )
                         }
@@ -222,6 +256,20 @@ class MainActivity : ComponentActivity() {
                                 onBackPressed = { currentScreen = previousScreen },
                                 onPredictionComplete = { result ->
                                     Toast.makeText(context, "Breed identified: ${result.breedName}", Toast.LENGTH_LONG).show()
+                                },
+                                onBreedFound = { breed ->
+                                    selectedBreed = breed
+                                    previousScreen = currentScreen
+                                    currentScreen = "dog_detail"
+                                }
+                            )
+                        }
+                        "gemini_prediction" -> capturedImageUri?.let { uri ->
+                            GeminiPredictionScreen(
+                                imageUri = uri,
+                                onBackPressed = { currentScreen = previousScreen },
+                                onPredictionComplete = { result ->
+                                    Toast.makeText(context, "AI identified: ${result.breedName}", Toast.LENGTH_LONG).show()
                                 },
                                 onBreedFound = { breed ->
                                     selectedBreed = breed

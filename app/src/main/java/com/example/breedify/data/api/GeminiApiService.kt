@@ -31,17 +31,31 @@ class GeminiApiService {
                 Logger.d("Starting dog breed identification", TAG)
                 
                 val prompt = """
-                    Analyze this image and identify the dog breed. Please provide:
-                    1. The most likely breed name
-                    2. Confidence level (as a percentage)
-                    3. Key identifying features you observed
-                    4. Brief description of the breed's characteristics
+                    You are an expert dog breed identification system. Carefully analyze the provided image 
+                    and identify the most likely dog breed. Consider the following characteristics:
                     
-                    Format your response as:
-                    Breed: [Breed Name]
-                    Confidence: [X]%
-                    Features: [Key features observed]
-                    About: [Brief breed description]
+                    1. Head shape and size
+                    2. Ear shape and position
+                    3. Eye shape and color
+                    4. Muzzle length and shape
+                    5. Body size and proportions
+                    6. Coat type, length, color, and patterns
+                    7. Tail shape and carriage
+                    8. Overall body structure
+                    
+                    For the identified breed, provide the following information in the specified format:
+                    
+                    Breed: [Official breed name according to major kennel clubs like AKC, FCI, or KC]
+                    Confidence: [Your confidence percentage from 0-100% based on image clarity and breed distinctiveness]
+                    Features: [3-5 most distinctive physical features that helped with identification]
+                    About: [2-3 sentence description of the breed's key characteristics and temperament]
+                    
+                    Important guidelines:
+                    - If the image contains multiple dogs, focus on the most prominent/centered one
+                    - If the dog appears to be a mix, identify the most dominant breed
+                    - If the image quality is too poor, say so
+                    - Be specific with breed names (e.g., "German Shepherd" not just "Shepherd")
+                    - If unsure, provide the most likely breed but indicate lower confidence
                 """.trimIndent()
 
                 val inputContent = content {
