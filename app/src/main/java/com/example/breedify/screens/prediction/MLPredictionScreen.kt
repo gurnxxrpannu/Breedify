@@ -3,6 +3,7 @@ package com.example.breedify.screens.prediction
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -88,11 +89,14 @@ fun MLPredictionScreen(
         scope.launch {
             try {
                 // Phase 1: Initial setup and connection
-                statusMessage = "Connecting to Hugging Face API..."
-                delay(800L)
+                statusMessage = "Connecting to AI service..."
+                delay(500L)
                 
                 statusMessage = "Preparing image for analysis..."
-                delay(600L)
+                delay(400L)
+                
+                statusMessage = "Note: First request may take longer as AI model loads..."
+                delay(800L)
                 
                 // Phase 2: Start ML prediction with progress counter
                 statusMessage = "Analyzing with Breedify AI model..."
@@ -108,6 +112,8 @@ fun MLPredictionScreen(
                         apiResult = mlUtils.predictBreed(imageUri)
                     } catch (e: Exception) {
                         apiError = e
+                        // Log the error for debugging
+                        android.util.Log.e("MLPredictionScreen", "API error: ${e.message}", e)
                     }
                 }
                 
@@ -159,7 +165,17 @@ fun MLPredictionScreen(
                 isLoading = false
                 
             } catch (e: Exception) {
-                errorMessage = "Error: ${e.message}"
+                errorMessage = when {
+                    e.message?.contains("timeout", ignoreCase = true) == true -> 
+                        "The AI service is taking longer than usual. Please check your internet connection and try again."
+                    e.message?.contains("network", ignoreCase = true) == true -> 
+                        "Network error. Please check your internet connection."
+                    e.message?.contains("connection", ignoreCase = true) == true -> 
+                        "Unable to connect to the AI service. Please try again later."
+                    e.message?.contains("API", ignoreCase = true) == true -> 
+                        "AI service temporarily unavailable. Please try again in a few minutes."
+                    else -> "An unexpected error occurred: ${e.message ?: "Unknown error"}"
+                }
                 isLoading = false
             }
         }
@@ -315,13 +331,33 @@ fun MLPredictionScreen(
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
-                        Button(
-                            onClick = onBackPressed,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = BreedifyColors.Primary
-                            )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Text("Try Again")
+                            OutlinedButton(
+                                onClick = onBackPressed,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Back")
+                            }
+                            
+                            Button(
+                                onClick = {
+                                    // Retry prediction by resetting state
+                                    errorMessage = null
+                                    predictionResult = null
+                                    isLoading = true
+                                    statusMessage = "Retrying..."
+                                    predictionProgress = 0
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = BreedifyColors.Primary
+                                )
+                            ) {
+                                Text("Retry")
+                            }
                         }
                     }
                     
@@ -365,6 +401,39 @@ fun MLPredictionScreen(
                                     fontSize = 16.sp,
                                     color = BreedifyColors.TextSecondary
                                 )
+                            }
+                        }
+                        
+                        // Show demo mode notification if applicable
+                        if (predictionResult!!.breedName.contains("(Demo)")) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "ℹ️",
+                                        fontSize = 16.sp,
+                                        modifier = Modifier.padding(end = 8.dp)
+                                    )
+                                    
+                                    Text(
+                                        text = "Demo Mode: AI service unavailable. This is a sample prediction.",
+                                        fontSize = 12.sp,
+                                        color = BreedifyColors.TextSecondary,
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
                             }
                         }
                         
