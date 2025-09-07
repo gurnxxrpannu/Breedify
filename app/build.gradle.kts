@@ -103,6 +103,12 @@ dependencies {
     
     // Lottie animations
     implementation("com.airbnb.android:lottie-compose:6.1.0")
+
+    // OkHttp for network requests
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // Gson for JSON parsing
+    implementation("com.google.code.gson:gson:2.10.1")
     
     implementation(libs.generativeai)
     testImplementation(libs.junit)
@@ -113,3 +119,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+

@@ -168,7 +168,7 @@ app/src/main/java/com/example/breedify/
    
    # Required API Keys - Replace with your actual keys
    HUGGINGFACE_API_KEY=hf_your_huggingface_token_here
-   GEMINI_API_KEY=your_gemini_api_key_here
+   GEMINI_API_KEY=
    DOG_API_KEY=your_dog_api_key_here
    ```
 

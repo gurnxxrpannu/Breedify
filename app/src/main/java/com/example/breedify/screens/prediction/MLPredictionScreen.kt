@@ -28,11 +28,7 @@ import com.example.breedify.data.api.Breed
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlin.random.Random
-
-data class PredictionResult(
-    val breedName: String,
-    val confidence: Float
-)
+import com.example.breedify.data.model.PredictionResult
 
 // Helper function to normalize breed names for better matching
 private fun normalizeBreedName(breedName: String): String {

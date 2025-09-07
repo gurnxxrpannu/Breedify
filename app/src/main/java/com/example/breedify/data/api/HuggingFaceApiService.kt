@@ -5,7 +5,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import com.example.breedify.BuildConfig
-import com.example.breedify.screens.prediction.PredictionResult
+import com.example.breedify.data.model.PredictionResult
 import com.example.breedify.utils.CameraUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,7 +20,7 @@ import java.io.IOException
 class HuggingFaceApiService(private val context: Context) {
     companion object {
         private const val TAG = "HuggingFaceApiService"
-        private val API_URL = "https://api-inference.huggingface.co/models/sakshammittal/Breedify"
+        private val API_URL = "https://api-inference.huggingface.co/models/sakshammittal/Breedify-model"
     
     // Alternate model URLs in case the primary one fails
     private val ALTERNATE_API_URLS = listOf(
