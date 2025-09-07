@@ -253,7 +253,10 @@ class MainActivity : ComponentActivity() {
                         "prediction" -> capturedImageUri?.let { uri ->
                             MLPredictionScreen(
                                 imageUri = uri,
-                                onBackPressed = { currentScreen = previousScreen },
+                                onBackPressed = { 
+                                    // Go back to camera screen when coming from prediction
+                                    currentScreen = if (previousScreen == "camera") "camera" else previousScreen
+                                },
                                 onPredictionComplete = { result ->
                                     Toast.makeText(context, "Breed identified: ${result.breedName}", Toast.LENGTH_LONG).show()
                                 },
@@ -267,7 +270,10 @@ class MainActivity : ComponentActivity() {
                         "gemini_prediction" -> capturedImageUri?.let { uri ->
                             GeminiPredictionScreen(
                                 imageUri = uri,
-                                onBackPressed = { currentScreen = previousScreen },
+                                onBackPressed = { 
+                                    // Always go back to camera screen when coming from Gemini prediction
+                                    currentScreen = "camera"
+                                },
                                 onPredictionComplete = { result ->
                                     Toast.makeText(context, "AI identified: ${result.breedName}", Toast.LENGTH_LONG).show()
                                 },
