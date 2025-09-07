@@ -57,7 +57,7 @@ fun ExploreScreen(
     // Load initial breeds
     LaunchedEffect(Unit) {
         isLoading = true
-        scope.launch {
+        try {
             repository.getAllBreeds().fold(
                 onSuccess = { allBreeds ->
                     breeds = allBreeds
@@ -68,6 +68,9 @@ fun ExploreScreen(
                     // Handle error - could show a snackbar or error state
                 }
             )
+        } catch (e: Exception) {
+            // Handle cancellation gracefully
+        } finally {
             isLoading = false
         }
     }
@@ -75,7 +78,7 @@ fun ExploreScreen(
     // Search functionality
     LaunchedEffect(searchText) {
         if (searchText.isNotEmpty()) {
-            scope.launch {
+            try {
                 repository.searchBreeds(searchText).fold(
                     onSuccess = { searchResults ->
                         displayedBreeds = searchResults
@@ -85,6 +88,8 @@ fun ExploreScreen(
                         // Handle search error
                     }
                 )
+            } catch (e: Exception) {
+                // Handle cancellation gracefully
             }
         } else {
             displayedBreeds = breeds.take(breedsPerPage)
@@ -174,12 +179,17 @@ fun ExploreScreen(
                                     onClick = {
                                         isLoadingMore = true
                                         scope.launch {
-                                            // Simulate loading delay for better UX
-                                            kotlinx.coroutines.delay(500)
-                                            val nextPageBreeds = breeds.drop(currentPage * breedsPerPage).take(breedsPerPage)
-                                            displayedBreeds = displayedBreeds + nextPageBreeds
-                                            currentPage++
-                                            isLoadingMore = false
+                                            try {
+                                                // Simulate loading delay for better UX
+                                                kotlinx.coroutines.delay(500)
+                                                val nextPageBreeds = breeds.drop(currentPage * breedsPerPage).take(breedsPerPage)
+                                                displayedBreeds = displayedBreeds + nextPageBreeds
+                                                currentPage++
+                                            } catch (e: Exception) {
+                                                // Handle cancellation gracefully
+                                            } finally {
+                                                isLoadingMore = false
+                                            }
                                         }
                                     }
                                 )
