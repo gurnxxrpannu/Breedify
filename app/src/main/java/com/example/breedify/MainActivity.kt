@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.BackHandler
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -102,7 +103,61 @@ class MainActivity : ComponentActivity() {
                 var originalScreen by remember { mutableStateOf("home") } // Track the screen before prediction
                 val context = LocalContext.current
                 
+                // Navigation stack for proper back handling
+                var navigationStack by remember { mutableStateOf(listOf("home")) }
+                
+                // Function to navigate with stack management
+                fun navigateToScreen(newScreen: String) {
+                    if (newScreen != currentScreen) {
+                        navigationStack = navigationStack + currentScreen
+                        previousScreen = currentScreen
+                        currentScreen = newScreen
+                    }
+                }
+                
+                // Function to handle back navigation
+                fun handleBackNavigation(): Boolean {
+                    return when {
+                        // Special case: if on dog_detail from prediction, go to camera
+                        currentScreen == "dog_detail" && (previousScreen == "prediction" || previousScreen == "gemini_prediction") -> {
+                            currentScreen = "camera"
+                            // Update navigation stack
+                            navigationStack = navigationStack.dropLast(1)
+                            true
+                        }
+                        // If there's a navigation stack, go back
+                        navigationStack.isNotEmpty() -> {
+                            val previousScreenFromStack = navigationStack.last()
+                            navigationStack = navigationStack.dropLast(1)
+                            previousScreen = if (navigationStack.isNotEmpty()) navigationStack.last() else "home"
+                            currentScreen = previousScreenFromStack
+                            true
+                        }
+                        // If at home screen, let the system handle it (exit app)
+                        currentScreen == "home" -> false
+                        // Default: go to home
+                        else -> {
+                            currentScreen = "home"
+                            navigationStack = listOf()
+                            previousScreen = "home"
+                            true
+                        }
+                    }
+                }
+                
+                // Handle system back button
+                BackHandler {
+                    if (!handleBackNavigation()) {
+                        // If handleBackNavigation returns false, exit the app
+                        finish()
+                    }
+                }
+                
                 if (showWelcomeScreen) {
+                    // Prevent back navigation from welcome screen (user should use the get started button)
+                    BackHandler {
+                        // Do nothing - force user to use "Get Started" button
+                    }
                     WelcomeScreen(
                         onGetStarted = { showWelcomeScreen = false }
                     )
@@ -110,17 +165,14 @@ class MainActivity : ComponentActivity() {
                     when (currentScreen) {
                         "home" -> HomeScreen(
                             onNavigate = { route -> 
-                                previousScreen = currentScreen
-                                currentScreen = route 
+                                navigateToScreen(route)
                             },
                             onBreedClick = { breed ->
                                 selectedBreed = breed
-                                previousScreen = currentScreen
-                                currentScreen = "dog_detail"
+                                navigateToScreen("dog_detail")
                             },
                             onOpenCamera = { 
-                                previousScreen = currentScreen
-                                currentScreen = "camera" 
+                                navigateToScreen("camera")
                             },
                             onUploadPhoto = {
                                 openFilePicker { uri ->
@@ -149,35 +201,26 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             onChatbotClick = { 
-                                previousScreen = currentScreen
-                                currentScreen = "chatbot" 
+                                navigateToScreen("chatbot")
                             }
                         )
                         "explore" -> ExploreScreen(
                             onNavigate = { route -> 
-                                previousScreen = currentScreen
-                                currentScreen = route 
+                                navigateToScreen(route)
                             },
                             onBreedClick = { breed ->
                                 selectedBreed = breed
-                                previousScreen = currentScreen
-                                currentScreen = "dog_detail"
+                                navigateToScreen("dog_detail")
                             },
                             onChatbotClick = { 
-                                previousScreen = currentScreen
-                                currentScreen = "chatbot" 
+                                navigateToScreen("chatbot")
                             }
                         )
                         "dog_detail" -> selectedBreed?.let { breed ->
                             DogDetailScreen(
                                 breed = breed,
                                 onBackClick = { 
-                                    // If coming from prediction screens, go back to camera screen
-                                    currentScreen = if (previousScreen == "prediction" || previousScreen == "gemini_prediction") {
-                                        "camera"
-                                    } else {
-                                        previousScreen
-                                    }
+                                    handleBackNavigation()
                                 }
                             )
                         }
@@ -192,8 +235,7 @@ class MainActivity : ComponentActivity() {
                             
                             DogBreedIdentificationScreen(
                                 onNavigate = { route -> 
-                                    previousScreen = currentScreen
-                                    currentScreen = route 
+                                    navigateToScreen(route)
                                 },
                                 onTakePhoto = { onResult ->
                                     openCamera { uri ->
@@ -208,8 +250,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onChatbotClick = { 
-                                    previousScreen = currentScreen
-                                    currentScreen = "chatbot"
+                                    navigateToScreen("chatbot")
                                 },
                                 onGeminiAnalysis = { onResult ->
                                     // Show options for camera or gallery for Gemini analysis
@@ -241,21 +282,18 @@ class MainActivity : ComponentActivity() {
                         }
                         "favorites" -> FavoritesScreen(
                             onNavigate = { route -> 
-                                previousScreen = currentScreen
-                                currentScreen = route 
+                                navigateToScreen(route)
                             },
                             onBreedClick = { breed ->
                                 selectedBreed = breed
-                                previousScreen = currentScreen
-                                currentScreen = "dog_detail"
+                                navigateToScreen("dog_detail")
                             },
                             onChatbotClick = { 
-                                previousScreen = currentScreen
-                                currentScreen = "chatbot" 
+                                navigateToScreen("chatbot")
                             }
                         )
                         "chatbot" -> ChatbotScreen(
-                            onNavigateBack = { currentScreen = previousScreen }
+                            onNavigateBack = { handleBackNavigation() }
                         )
                         "prediction" -> capturedImageUri?.let { uri ->
                             MLPredictionScreen(
@@ -269,8 +307,7 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onBreedFound = { breed ->
                                     selectedBreed = breed
-                                    previousScreen = currentScreen
-                                    currentScreen = "dog_detail"
+                                    navigateToScreen("dog_detail")
                                 }
                             )
                         }
@@ -286,25 +323,21 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onBreedFound = { breed ->
                                     selectedBreed = breed
-                                    previousScreen = currentScreen
-                                    currentScreen = "dog_detail"
+                                    navigateToScreen("dog_detail")
                                 }
                             )
                         }
 
                         else -> HomeScreen(
                             onNavigate = { route -> 
-                                previousScreen = currentScreen
-                                currentScreen = route 
+                                navigateToScreen(route)
                             },
                             onBreedClick = { breed ->
                                 selectedBreed = breed
-                                previousScreen = currentScreen
-                                currentScreen = "dog_detail"
+                                navigateToScreen("dog_detail")
                             },
                             onOpenCamera = { 
-                                previousScreen = currentScreen
-                                currentScreen = "camera" 
+                                navigateToScreen("camera")
                             },
                             onUploadPhoto = {
                                 openFilePicker { uri ->
@@ -314,8 +347,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             onChatbotClick = { 
-                                previousScreen = currentScreen
-                                currentScreen = "chatbot" 
+                                navigateToScreen("chatbot")
                             }
                         )
                     }
