@@ -99,6 +99,7 @@ class MainActivity : ComponentActivity() {
                 var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
                 var selectedBreed by remember { mutableStateOf<Breed?>(null) }
                 var previousScreen by remember { mutableStateOf("home") }
+                var originalScreen by remember { mutableStateOf("home") } // Track the screen before prediction
                 val context = LocalContext.current
                 
                 if (showWelcomeScreen) {
@@ -134,6 +135,7 @@ class MainActivity : ComponentActivity() {
                                             android.app.AlertDialog.Builder(context)
                                                 .setTitle("Choose Prediction Method")
                                                 .setItems(options) { _, which ->
+                                                    originalScreen = currentScreen // Store original screen before prediction
                                                     previousScreen = currentScreen
                                                     currentScreen = if (which == 0) "prediction" else "gemini_prediction"
                                                 }
@@ -170,8 +172,12 @@ class MainActivity : ComponentActivity() {
                             DogDetailScreen(
                                 breed = breed,
                                 onBackClick = { 
-                                    // Go back to the previous screen
-                                    currentScreen = previousScreen
+                                    // If coming from prediction screens, go back to camera screen
+                                    currentScreen = if (previousScreen == "prediction" || previousScreen == "gemini_prediction") {
+                                        "camera"
+                                    } else {
+                                        previousScreen
+                                    }
                                 }
                             )
                         }
@@ -211,6 +217,7 @@ class MainActivity : ComponentActivity() {
                                     android.app.AlertDialog.Builder(context)
                                         .setTitle("Select Image for Gemini Analysis")
                                         .setItems(options) { _, which ->
+                                            originalScreen = currentScreen // Store original screen before prediction
                                             if (which == 0) {
                                                 // Take photo
                                                 openCamera { uri ->
