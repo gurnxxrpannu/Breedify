@@ -10,11 +10,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.activity.compose.BackHandler
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
 import com.example.breedify.screens.welcomeScreen.WelcomeScreen
 import com.example.breedify.screens.homeScreen.HomeScreen
 import com.example.breedify.screens.exploreScreen.ExploreScreen
