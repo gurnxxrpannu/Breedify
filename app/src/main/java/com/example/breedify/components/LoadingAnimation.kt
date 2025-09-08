@@ -109,14 +109,6 @@ fun DogBreedLoadingAnimation(
             color = MaterialTheme.colorScheme.onSurface
         )
         
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        Text(
-            text = "🐕 Powered by AI",
-            style = MaterialTheme.typography.bodySmall,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-        )
     }
 }
 
